@@ -64,3 +64,9 @@ u blox NEO M9N: `https://www.u-blox.com/en/product/neo-m9n-module`
 Bosch BMM350: `https://www.bosch-sensortec.com/en/products/motion-sensors/magnetometers`
 
 Raspberry Pi Camera Module 3: `https://www.raspberrypi.com/documentation/accessories/camera-module-3.html`
+
+## Level point mass example
+
+For each axis, drag force equals the drag coefficient multiplied by wind velocity minus aircraft velocity. Vertical force adds the four prescribed upward thrust values and subtracts mass multiplied by gravity. Acceleration equals force divided by mass. At each step, position advances by the current velocity multiplied by the time step. Velocity advances by the current acceleration multiplied by the time step. These are explicit Euler updates.
+
+The example assumes a level point mass. It does not calculate attitude, torque, motor response, propeller aerodynamics or a controller. The drag coefficient and wind are illustrative and have not been measured. A motor outage only removes that motor input from the summed thrust. It does not predict the behaviour of a real aircraft after a motor failure.

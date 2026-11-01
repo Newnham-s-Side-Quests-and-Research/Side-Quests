@@ -14,6 +14,8 @@ The simulation includes an isolated vertical motion model. A separate closed loo
 
 A separate three dimensional kinematic mission plans a route through a synthetic grid. It moves between grid points at a fixed speed and pauses when its simulated position signal is unavailable. It does not model aircraft attitude or physical flight dynamics.
 
+A separate point mass model calculates movement in three axes using prescribed upward thrust, gravity and linear wind drag. It holds the aircraft level and does not simulate attitude or real motor failure. It is independent of the grid mission and the vertical controller.
+
 ## Run the checks
 
 From this folder run:
@@ -47,7 +49,7 @@ $env:PYTHONPATH = "src"
 python -m drone_archive dashboard fixtures/closed-loop-scenario.json
 ```
 
-Open the local address printed by the command. The screen replays four synthetic scenarios and shows their metrics. A run can be downloaded for inspection. The screen cannot control an aircraft. It is bound to the local machine and has no login or remote access service. The scenarios and metrics document explains what each figure means. The formulas and component candidates document records the three cell battery references and the assumptions behind the power example.
+Open the local address printed by the command. The screen replays six synthetic scenarios and shows their metrics. A run can be downloaded for inspection. The screen cannot control an aircraft. It is bound to the local machine and has no login or remote access service. The scenarios and metrics document explains what each figure means. The formulas and component candidates document records the three cell battery references and the assumptions behind the power example.
 
 To write the closed loop trace instead:
 
@@ -60,6 +62,14 @@ To run the three dimensional grid mission:
 ```powershell
 python -m drone_archive mission3d fixtures/mission3d-scenario.json --output results/mission3d.json
 ```
+
+To run the level point mass example:
+
+```powershell
+python -m drone_archive point-mass fixtures/point-mass-scenario.json --output results/point-mass.json
+```
+
+The output is synthetic and must not be used to control an aircraft.
 
 ## Read before using the model
 

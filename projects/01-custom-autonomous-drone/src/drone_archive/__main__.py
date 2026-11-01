@@ -15,6 +15,7 @@ from .mission import run_demonstration
 from .closed_loop import simulate_closed_loop
 from .dashboard import LocalDashboard
 from .mission3d import MissionError, run_mission
+from .point_mass import simulate_point_mass
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -52,6 +53,9 @@ def main(argv=None):
     spatial = commands.add_parser('mission3d', help='Run a synthetic three dimensional kinematic mission')
     spatial.add_argument('config')
     spatial.add_argument('--output', required=True)
+    point_mass = commands.add_parser('point-mass', help='Run a synthetic level point mass model')
+    point_mass.add_argument('config')
+    point_mass.add_argument('--output', required=True)
     dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
     dashboard.add_argument('config')
     dashboard.add_argument('--port', type=int, default=8766)
@@ -119,7 +123,9 @@ def main(argv=None):
             return 0 if route is not None else 1
         else:
             config = json.loads(Path(args.config).read_text(encoding='utf-8'))
-            if args.command == 'estimate':
+            if args.command == 'point-mass':
+                result = simulate_point_mass(config)
+            elif args.command == 'estimate':
                 result = estimate_scenario(config)
             elif args.command == 'closed':
                 result = simulate_closed_loop(config)
