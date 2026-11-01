@@ -45,6 +45,12 @@ class WorkflowTests(unittest.TestCase):
         events = WorkflowStore(self.database).outbox()
         self.assertEqual([event['event_type'] for event in events], ['create_order', 'record_receipt', 'post_invoice'])
         self.assertEqual(events[2]['payload']['result']['status'], 'posted')
+        snapshot = self.store.order_snapshot('o1')
+        self.assertEqual(snapshot['ordered_quantity'], 10)
+        self.assertEqual(snapshot['received_quantity'], 4)
+        self.assertEqual(snapshot['invoiced_amount_minor'], 500)
+        self.assertEqual(snapshot['remaining_to_receive'], 6)
+        self.assertEqual(snapshot['received_not_invoiced'], 0)
         self.assertEqual(self.store.apply(invoice())['status'], 'posted')
         self.assertEqual(len(self.store.outbox()), 3)
 
@@ -74,6 +80,17 @@ class WorkflowTests(unittest.TestCase):
         with closing(sqlite3.connect(self.database)) as connection:
             self.assertEqual(connection.execute('SELECT COUNT(*) FROM orders').fetchone()[0], 0)
             self.assertEqual(connection.execute('SELECT COUNT(*) FROM commands').fetchone()[0], 0)
+
+    def test_acknowledgement_is_durable_and_idempotent(self):
+        self.store.apply(order())
+        self.assertIsNone(self.store.outbox()[0]['acknowledged_by'])
+        expected = {'sequence': 1, 'acknowledged_by': 'operator1'}
+        self.assertEqual(self.store.acknowledge_outbox(1, 'operator1'), expected)
+        self.assertEqual(WorkflowStore(self.database).acknowledge_outbox(1, 'operator1'), expected)
+        self.assertEqual(WorkflowStore(self.database).outbox()[0]['acknowledged_by'], 'operator1')
+        with self.assertRaises(WorkflowError): self.store.acknowledge_outbox(1, 'other')
+        with self.assertRaises(WorkflowError): self.store.acknowledge_outbox(2, 'operator1')
+        with self.assertRaises(WorkflowError): self.store.acknowledge_outbox(True, 'operator1')
 
     def test_cli_applies_commands_across_process_restarts(self):
         env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')

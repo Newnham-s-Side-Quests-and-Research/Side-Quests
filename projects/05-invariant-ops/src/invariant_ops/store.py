@@ -53,6 +53,10 @@ class WorkflowStore:
                     sequence INTEGER PRIMARY KEY AUTOINCREMENT, command_id TEXT UNIQUE NOT NULL,
                     event_type TEXT NOT NULL, payload TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS outbox_acknowledgements (
+                    sequence INTEGER PRIMARY KEY REFERENCES outbox(sequence),
+                    actor TEXT NOT NULL
+                );
             ''')
         finally:
             connection.close()
@@ -158,7 +162,62 @@ class WorkflowStore:
     def outbox(self):
         connection = self._connection()
         try:
-            rows = connection.execute('SELECT sequence, command_id, event_type, payload FROM outbox ORDER BY sequence').fetchall()
-            return [{'sequence': row[0], 'command_id': row[1], 'event_type': row[2], 'payload': json.loads(row[3])} for row in rows]
+            rows = connection.execute('''SELECT outbox.sequence, outbox.command_id, outbox.event_type,
+                                      outbox.payload, outbox_acknowledgements.actor
+                                      FROM outbox LEFT JOIN outbox_acknowledgements
+                                      ON outbox.sequence = outbox_acknowledgements.sequence
+                                      ORDER BY outbox.sequence''').fetchall()
+            return [{'sequence': row[0], 'command_id': row[1], 'event_type': row[2],
+                     'payload': json.loads(row[3]), 'acknowledged_by': row[4]} for row in rows]
+        finally:
+            connection.close()
+
+    def order_snapshot(self, order_id):
+        order_id = _id(order_id, 'order ID')
+        connection = self._connection()
+        try:
+            connection.execute('BEGIN')
+            order = connection.execute('SELECT supplier_id, currency, quantity, unit_price_minor FROM orders WHERE order_id = ?', (order_id,)).fetchone()
+            if order is None:
+                raise WorkflowError('Order does not exist')
+            received = connection.execute('SELECT COALESCE(SUM(quantity), 0) FROM receipts WHERE order_id = ?', (order_id,)).fetchone()[0]
+            invoiced = connection.execute('SELECT COALESCE(SUM(quantity), 0), COALESCE(SUM(amount_minor), 0) FROM invoices WHERE order_id = ?', (order_id,)).fetchone()
+            connection.commit()
+            return {'order_id': order_id, 'supplier_id': order[0], 'currency': order[1],
+                    'ordered_quantity': order[2], 'unit_price_minor': order[3],
+                    'received_quantity': received, 'invoiced_quantity': invoiced[0],
+                    'invoiced_amount_minor': invoiced[1], 'remaining_to_receive': order[2] - received,
+                    'received_not_invoiced': received - invoiced[0]}
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def acknowledge_outbox(self, sequence, actor):
+        """Record a caller assertion that an outbox event was handled.
+
+        The caller owns delivery and authentication. An acknowledgement alone
+        does not prove that an external system received an event.
+        """
+        if type(sequence) is not int or not 1 <= sequence <= 2**63 - 1:
+            raise WorkflowError('Invalid outbox sequence')
+        actor = _id(actor, 'actor')
+        connection = self._connection()
+        try:
+            connection.execute('BEGIN IMMEDIATE')
+            exists = connection.execute('SELECT 1 FROM outbox WHERE sequence = ?', (sequence,)).fetchone()
+            if exists is None:
+                raise WorkflowError('Outbox event does not exist')
+            previous = connection.execute('SELECT actor FROM outbox_acknowledgements WHERE sequence = ?', (sequence,)).fetchone()
+            if previous is not None and previous[0] != actor:
+                raise WorkflowError('Outbox event was acknowledged by another actor')
+            if previous is None:
+                connection.execute('INSERT INTO outbox_acknowledgements VALUES (?, ?)', (sequence, actor))
+            connection.commit()
+            return {'sequence': sequence, 'acknowledged_by': actor}
+        except Exception:
+            connection.rollback()
+            raise
         finally:
             connection.close()
