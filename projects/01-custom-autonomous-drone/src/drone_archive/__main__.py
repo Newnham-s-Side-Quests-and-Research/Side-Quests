@@ -20,6 +20,7 @@ from .rigid_body import simulate_rigid_body
 from .flight3d import run_controlled_flight
 from .c_controller import load_position_controller
 from .navigation import run_navigation
+from .telemetry_frames import FrameError, parse_frame
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -43,6 +44,8 @@ def main(argv=None):
     telemetry = commands.add_parser('telemetry', help='Create simulated telemetry snapshots')
     telemetry.add_argument('config')
     telemetry.add_argument('--output', required=True)
+    frame = commands.add_parser('validate-frame', help='Validate a versioned telemetry frame from a local file')
+    frame.add_argument('file')
     vision = commands.add_parser('vision', help='Detect regions in a synthetic image')
     vision.add_argument('image')
     vision.add_argument('--output', required=True)
@@ -86,6 +89,9 @@ def main(argv=None):
                     server.serve_forever()
                 except KeyboardInterrupt:
                     pass
+        elif args.command == 'validate-frame':
+            frame = parse_frame(Path(args.file).read_bytes())
+            print(json.dumps(frame, indent=2, allow_nan=False))
         elif args.command == 'hash':
             print(hash_file(args.file))
         elif args.command == 'validate':
@@ -169,7 +175,7 @@ def main(argv=None):
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n', encoding='utf-8')
             print(f"Wrote {len(result['trace'])} simulated steps to {destination}")
-    except (OSError, ValueError, EvidenceError, SimulationError, EstimationError, PlanningError, TelemetryError, VisionError, MissionError) as exc:
+    except (OSError, ValueError, EvidenceError, SimulationError, EstimationError, PlanningError, TelemetryError, VisionError, MissionError, FrameError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
     return 0

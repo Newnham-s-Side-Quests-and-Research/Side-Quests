@@ -36,7 +36,7 @@ class ClosedLoopTests(unittest.TestCase):
         self.assertAlmostEqual(row['control']['thrust_n'], expected)
         self.assertNotEqual(row['estimate']['altitude_m'], row['truth']['altitude_m'])
 
-    def test_recorded_controller_terms_reconstruct_the_command(self):
+    def test_recorded_controller_terms_match_the_command(self):
         trace = simulate_closed_loop(self.config)['trace']
         for row in trace:
             control = row['control']; estimate = row['estimate']
