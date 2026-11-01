@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "monitor": {"method": "normalised", "threshold": 4},
+  "supervisor": {"alarms_to_degrade": 2, "clears_to_recover": 2, "max_gap_seconds": 2},
+  "observations": [
+    {"timestamp_s": 0, "residual": 1, "variance": 1},
+    {"timestamp_s": 1, "residual": 3, "variance": 1},
+    {"timestamp_s": 2, "residual": 3, "variance": 1},
+    {"timestamp_s": 3, "residual": 0, "variance": 1},
+    {"timestamp_s": 4, "residual": 0, "variance": 1}
+  ]
+}
