@@ -1,0 +1,1 @@
+"""Deterministic freight charge checks."""
