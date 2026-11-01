@@ -2,13 +2,15 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
-from .closed_loop import simulate_closed_loop
+from .scenarios import build_scenarios
 
 ASSETS = Path(__file__).resolve().parents[2] / 'dashboard'
 
 class LocalDashboard(ThreadingHTTPServer):
     def __init__(self, config, port=0):
-        self.trace = json.dumps(simulate_closed_loop(config), allow_nan=False).encode('utf-8')
+        scenarios = build_scenarios(config)
+        self.trace = json.dumps(scenarios[0]['report'], allow_nan=False).encode('utf-8')
+        self.scenarios = json.dumps(scenarios, allow_nan=False).encode('utf-8')
         super().__init__(('127.0.0.1', port), DashboardHandler)
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -16,6 +18,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
         routes = {'/': ('index.html', 'text/html; charset=utf-8'),
                   '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8')}
+        if self.path == '/api/scenarios':
+            return self.respond(200, 'application/json; charset=utf-8', self.server.scenarios)
         if self.path == '/api/trace':
             return self.respond(200, 'application/json; charset=utf-8', self.server.trace)
         if self.path == '/api/health':

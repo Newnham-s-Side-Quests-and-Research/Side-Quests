@@ -45,7 +45,7 @@ $env:PYTHONPATH = "src"
 python -m drone_archive dashboard fixtures/closed-loop-scenario.json
 ```
 
-Open the local address printed by the command. The screen replays synthetic data and cannot control an aircraft. It is bound to the local machine and has no login or remote access service.
+Open the local address printed by the command. The screen replays four synthetic scenarios and shows their metrics. A run can be downloaded for inspection. The screen cannot control an aircraft. It is bound to the local machine and has no login or remote access service. The scenarios and metrics document explains what each figure means.
 
 To write the closed loop trace instead:
 

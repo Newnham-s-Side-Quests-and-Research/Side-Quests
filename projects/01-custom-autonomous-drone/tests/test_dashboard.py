@@ -30,6 +30,11 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('text/html', response.headers['Content-Type'])
             self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
             self.assertIn(b'Synthetic data', response.read())
+        with urlopen(self.url + '/api/scenarios', timeout=3) as response:
+            scenarios = json.load(response)
+            self.assertEqual(len(scenarios), 4)
+            self.assertEqual(scenarios[1]['metrics']['pressure_missing'], 30)
+            self.assertEqual(scenarios[1]['metrics']['gps_missing_on_schedule'], 6)
         with urlopen(self.url + '/api/trace', timeout=3) as response:
             report = json.load(response)
             self.assertEqual(len(report['trace']), 300)

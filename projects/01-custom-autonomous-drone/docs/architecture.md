@@ -50,4 +50,4 @@ The closed loop model samples synthetic pressure and position readings before ea
 
 Before the first accepted observation the model remains in a degraded state. It also enters that state if observations are unavailable for more than the configured number of steps or the synthetic motion signal is missing. It uses zero thrust as a test convention and holds the integral. The estimator uses a zero mean acceleration assumption with increased process variance while the motion signal is unavailable. These choices are not flight safety procedures.
 
-The dashboard is a local read only view of one generated trace. It binds only to the local machine and does not open a connection to hardware. A component is shown as not modelled when the simulation has no data for it. The view has no authentication or remote service.
+The dashboard is a local read only view of four generated scenarios. The scenarios and metrics document defines their fault windows and calculations. It binds only to the local machine and does not open a connection to hardware. A component is shown as not modelled when the simulation has no data for it. The view has no authentication or remote service.
