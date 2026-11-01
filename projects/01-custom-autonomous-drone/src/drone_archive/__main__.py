@@ -17,6 +17,8 @@ from .dashboard import LocalDashboard
 from .mission3d import MissionError, run_mission
 from .point_mass import simulate_point_mass
 from .rigid_body import simulate_rigid_body
+from .flight3d import run_controlled_flight
+from .c_controller import load_position_controller
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -60,6 +62,10 @@ def main(argv=None):
     rigid_body = commands.add_parser('rigid-body', help='Run a synthetic rigid body model')
     rigid_body.add_argument('config')
     rigid_body.add_argument('--output', required=True)
+    controlled = commands.add_parser('controlled-flight', help='Run a synthetic controlled three dimensional flight')
+    controlled.add_argument('config')
+    controlled.add_argument('--output', required=True)
+    controlled.add_argument('--controller-library', help='Optional shared library built from the C controller')
     dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
     dashboard.add_argument('config')
     dashboard.add_argument('--port', type=int, default=8766)
@@ -127,7 +133,10 @@ def main(argv=None):
             return 0 if route is not None else 1
         else:
             config = json.loads(Path(args.config).read_text(encoding='utf-8'))
-            if args.command == 'rigid-body':
+            if args.command == 'controlled-flight':
+                controller = load_position_controller(args.controller_library) if args.controller_library else None
+                result = run_controlled_flight(config, position_controller=controller)
+            elif args.command == 'rigid-body':
                 result = simulate_rigid_body(config)
             elif args.command == 'point-mass':
                 result = simulate_point_mass(config)

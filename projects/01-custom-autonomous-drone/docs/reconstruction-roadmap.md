@@ -2,7 +2,7 @@
 
 ## What the builder remembers
 
-Lewis describes autonomous flight with position adjustment, computer vision, path planning and geolocation. He describes a five inch racing frame, a three cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth and PID control.
+Lewis describes autonomous flight with position adjustment, computer vision, path planning and geolocation. He describes a five inch racing frame, a three cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth, PID control and using Python and C in the custom flight controller. The original split of responsibilities between the languages is not established.
 
 He also describes a private wireless connection and a telemetry screen showing sensor information and the condition of the aircraft. This is the builder account. The original code, measurements and component records are not available in this workspace. The exact board, sensors, camera, radio arrangement and original network design remain unconfirmed.
 
@@ -34,7 +34,7 @@ Telemetry snapshots expose the simulated readings and link availability flags. T
 
 A separate point mass example calculates position and velocity in three axes from four prescribed upward thrust values, gravity and linear drag relative to wind. It stops at a flat ground surface. The aircraft is held level and there is no torque or attitude model. Motor loss changes total thrust but does not represent the rotation or other effects on a real aircraft.
 
-A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. It has no sensor model or controller and has not been validated against an independent flight simulator or physical aircraft. Neither model is connected to the estimator, route planner or controller.
+A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. A separate controlled example connects it to a position controller and a pressure based vertical filter. The position controller can use Python or a compiled C calculation. Horizontal position and velocity and full attitude come directly from the model. The model has not been validated against an independent flight simulator or physical aircraft and is not connected to the route planner.
 
 ## Later engineering stages
 

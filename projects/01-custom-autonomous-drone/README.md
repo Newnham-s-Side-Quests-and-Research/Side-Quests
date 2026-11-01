@@ -4,7 +4,7 @@ This project records an earlier drone build and develops a separate software rec
 
 ## What is known
 
-Lewis describes the original aircraft as a five inch racing frame with a three cell lithium polymer battery and a custom power distribution board. His account includes a Raspberry Pi 3, an Arduino S3 mini, pressure and motion sensors, WiFi, Bluetooth and PID control. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The exact board and sensor models have not been confirmed from surviving files.
+Lewis describes the original aircraft as a five inch racing frame with a three cell lithium polymer battery and a custom power distribution board. His account includes a Raspberry Pi 3, an Arduino S3 mini, pressure and motion sensors, WiFi, Bluetooth and PID control. He describes using Python and C for the custom flight controller. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The exact board, sensor models and division of code between devices have not been confirmed from surviving files.
 
 ## What exists here
 
@@ -16,7 +16,9 @@ A separate three dimensional kinematic mission plans a route through a synthetic
 
 A separate point mass model calculates movement in three axes using prescribed upward thrust, gravity and linear wind drag. It holds the aircraft level and does not simulate attitude or real motor failure. It is independent of the grid mission and the vertical controller.
 
-A separate rigid body model adds a quaternion attitude, rotor moments, body angular rates and an assumed motor response. It uses illustrative parameters and prescribed motor commands. It is not yet connected to a controller or the dashboard playback.
+A separate rigid body model adds a quaternion attitude, rotor moments, body angular rates and an assumed motor response. It uses illustrative parameters and can run with prescribed motor commands. It is not yet connected to the dashboard playback.
+
+A controlled rigid body example connects a position controller and a vertical pressure filter to that model. Horizontal position and velocity and the full attitude are ideal model values. A portable C position calculation can be loaded into the Python simulation as an alternative to the Python calculation. This is a new reconstruction rather than recovered flight controller code.
 
 ## Run the checks
 
@@ -78,6 +80,21 @@ To run the rigid body example:
 ```powershell
 python -m drone_archive rigid-body fixtures/rigid-body-scenario.json --output results/rigid-body.json
 ```
+
+To run the controlled rigid body example:
+
+```powershell
+python -m drone_archive controlled-flight fixtures/controlled-flight-scenario.json --output results/controlled-flight.json
+```
+
+The optional C position calculation can be compiled as a shared library with a C11 compiler. For example on Windows with Zig installed:
+
+```powershell
+zig cc -std=c11 -O2 -shared flight-controller-c/position_control.c -o results/position_control.dll
+python -m drone_archive controlled-flight fixtures/controlled-flight-scenario.json --controller-library results/position_control.dll --output results/controlled-flight-c.json
+```
+
+Create the results folder before compiling. To include native compilation and Python comparison in the automated suite, set `DRONE_ZIG` to the Zig executable and run the test command above. Without that setting the native checks are skipped. The executable and library are local build tools and outputs. They are not included in the project source.
 
 The local dashboard links to a mathematical record with numbered equations and worked examples. Its assumptions are identified alongside the calculations.
 

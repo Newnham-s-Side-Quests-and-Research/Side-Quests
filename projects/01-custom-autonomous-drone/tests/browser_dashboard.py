@@ -70,7 +70,7 @@ async def run(base_url, output):
                     raise AssertionError('Mission completion is not shown')
                 await page.screenshot(path=str(output / f'{name}.png'), full_page=True)
                 await page.get_by_role('link', name='Read the mathematical calculations').click()
-                if await page.locator('math[display="block"]').count() != 6:
+                if await page.locator('math[display="block"]').count() != 7:
                     raise AssertionError('Numbered mathematical equations are missing')
                 if not await page.evaluate('document.documentElement.scrollWidth <= innerWidth'):
                     raise AssertionError('Calculation page overflows the viewport')

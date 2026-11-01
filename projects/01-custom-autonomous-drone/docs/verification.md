@@ -4,6 +4,8 @@ The current checks run locally with synthetic data. The automated suite runs in 
 
 The rigid body tests cover balanced hover, a rotated thrust direction, the first order motor response, rotor moment signs, constant angular rotation and a discrete free fall case. These checks do not establish accuracy for all flight conditions. The illustrative parameter values have not been measured from the original aircraft.
 
+The controlled rigid body checks compare a small set of seeded target tracking runs, exercise loss of one motor command and verify that a singular motor allocation is rejected. The C position calculation has an optional native test suite that checks known values, invalid inputs and agreement with the Python calculation throughout a simulated flight. These checks cover the chosen cases only. The controlled example uses perfect horizontal state and attitude from the model and does not establish real flight performance.
+
 The signal tests cover a hand calculated motion step, repeatability with a fixed seed, altitude bias, missing altitude samples, output bounds and invalid configuration. They also check a free fall example, integral holding, ideal pressure conversion, ideal motion readings and simulated link outages.
 
 The vertical estimator is checked against hand calculated prediction and observation updates. Its pressure derivative is compared with a numerical approximation. The tests cover rejected outliers, invalid inputs, covariance checks and a deterministic synthetic replay with missing position samples.

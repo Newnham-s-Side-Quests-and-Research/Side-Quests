@@ -44,7 +44,7 @@ def _window(value, steps):
     return motor, start, end
 
 
-def simulate_rigid_body(config):
+def simulate_rigid_body(config, controller=None):
     if not isinstance(config, dict) or config.get('schema_version') != 1:
         raise SimulationError('Rigid body configuration must use schema version 1')
     steps = config.get('steps')
@@ -85,8 +85,24 @@ def simulate_rigid_body(config):
     alpha = -math.expm1(-dt / tau)
     trace = []
     contact = None
+    previous_acceleration = None
     for step in range(steps):
         applied_command = command.copy()
+        controller_record = None
+        if controller is not None:
+            controller_state = {'step': step, 'time_s': step * dt, 'position_m': position.copy(),
+                                'velocity_m_s': velocity.copy(), 'quaternion_wxyz': attitude.copy(),
+                                'body_rate_rad_s': omega.copy(),
+                                'previous_acceleration_m_s2': None if previous_acceleration is None else previous_acceleration.copy()}
+            response = controller(controller_state)
+            if not isinstance(response, tuple) or len(response) != 2:
+                raise SimulationError('Controller must return commands and a record')
+            values, controller_record = response
+            if not isinstance(values, (tuple, list)) or len(values) != 4:
+                raise SimulationError('Controller must supply four motor commands')
+            applied_command = [_finite(item, 'controller motor command', 0) for item in values]
+            if not isinstance(controller_record, dict):
+                raise SimulationError('Controller record must be an object')
         if outage and outage[1] <= step < outage[2]:
             applied_command[outage[0]] = 0.0
         direction = _body_z(attitude)
@@ -105,7 +121,7 @@ def simulate_rigid_body(config):
                       'body_rate_rad_s': omega.copy(), 'motor_thrust_n': thrust.copy(),
                       'motor_command_n': applied_command, 'force_world_n': force,
                       'moment_body_nm': moment, 'acceleration_m_s2': acceleration,
-                      'angular_acceleration_rad_s2': angular_acceleration})
+                      'angular_acceleration_rad_s2': angular_acceleration, 'controller': controller_record})
         next_position = [position[i] + velocity[i] * dt for i in range(3)]
         next_velocity = [velocity[i] + acceleration[i] * dt for i in range(3)]
         next_omega = [omega[i] + angular_acceleration[i] * dt for i in range(3)]
@@ -122,12 +138,16 @@ def simulate_rigid_body(config):
             # The terminal attitude and motors are not interpolated.
             break
         position, velocity, omega, attitude, thrust = next_position, next_velocity, next_omega, next_attitude, next_thrust
-    return {'model': 'synthetic rigid body with prescribed motor commands', 'configuration': config,
+        previous_acceleration = acceleration
+    limitations = ['Synthetic parameters are not measured from the original aircraft',
+                   'No battery, propeller aerodynamics or impact dynamics',
+                   'Motor thrust follows an assumed first order response',
+                   'Explicit Euler integration and linear drag approximate the dynamics',
+                   'Terminal attitude and motor state are not interpolated at ground contact',
+                   'Not suitable for controlling or validating an aircraft']
+    if controller is None:
+        limitations.insert(1, 'No controller or sensors')
+    return {'model': 'synthetic rigid body with prescribed motor commands' if controller is None else 'synthetic rigid body with supplied controller', 'configuration': config,
             'trace': trace, 'final': {'position_m': position, 'velocity_m_s': velocity},
             'terminal_event': contact,
-            'limitations': ['Synthetic parameters are not measured from the original aircraft',
-                            'No controller, sensors, battery, propeller aerodynamics or impact dynamics',
-                            'Motor thrust follows an assumed first order response',
-                            'Explicit Euler integration and linear drag approximate the dynamics',
-                            'Terminal attitude and motor state are not interpolated at ground contact',
-                            'Not suitable for controlling or validating an aircraft']}
+            'limitations': limitations}

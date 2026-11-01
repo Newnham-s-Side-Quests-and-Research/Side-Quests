@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "plant": {
+    "schema_version": 1,
+    "steps": 1200,
+    "dt_seconds": 0.01,
+    "mass_kg": 1.0,
+    "gravity_m_s2": 9.81,
+    "drag_n_per_m_s": 0.2,
+    "inertia_kg_m2": [
+      0.01,
+      0.01,
+      0.02
+    ],
+    "rotor_positions_m": [
+      [
+        0.075,
+        0.075,
+        0
+      ],
+      [
+        0.075,
+        -0.075,
+        0
+      ],
+      [
+        -0.075,
+        -0.075,
+        0
+      ],
+      [
+        -0.075,
+        0.075,
+        0
+      ]
+    ],
+    "rotor_spin_signs": [
+      1,
+      -1,
+      1,
+      -1
+    ],
+    "yaw_moment_per_thrust_m": 0.01,
+    "motor_time_constant_s": 0.05,
+    "command_thrust_n": [
+      2.4525,
+      2.4525,
+      2.4525,
+      2.4525
+    ],
+    "initial_thrust_n": [
+      2.4525,
+      2.4525,
+      2.4525,
+      2.4525
+    ],
+    "initial_position_m": [
+      0,
+      0,
+      2
+    ],
+    "initial_velocity_m_s": [
+      0,
+      0,
+      0
+    ],
+    "initial_quaternion_wxyz": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "initial_body_rate_rad_s": [
+      0,
+      0,
+      0
+    ],
+    "wind_m_s": [
+      0,
+      0,
+      0
+    ],
+    "motor_outage": null
+  },
+  "controller": {
+    "target_position_m": [
+      1.0,
+      0.5,
+      2.5
+    ],
+    "position_gain": [
+      1,
+      1,
+      2
+    ],
+    "velocity_gain": [
+      1.8,
+      1.8,
+      2.5
+    ],
+    "attitude_gain": [
+      0.18,
+      0.18,
+      0.08
+    ],
+    "rate_gain": [
+      0.08,
+      0.08,
+      0.04
+    ],
+    "max_tilt_rad": 0.25,
+    "max_motor_thrust_n": 5,
+    "pressure_noise_std_pa": 2.0,
+    "acceleration_noise_std_m_s2": 0.03,
+    "seed": 42
+  }
+}
