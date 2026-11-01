@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>06: Exchange Lab | Engineering Portfolio</title><style>
+:root{color-scheme:light}*{box-sizing:border-box}html{background:#fff;color:#000}body{margin:0;font:16px/1.65 Arial,Helvetica,sans-serif;color:#000;background:#fff}a{color:#000;text-decoration:underline;text-underline-offset:3px}a:focus-visible{outline:3px solid #000;outline-offset:3px}.page{max-width:1050px;margin:0 auto;padding:36px 28px 70px}.masthead{display:flex;justify-content:space-between;gap:20px;align-items:center;border:2px solid #000;padding:14px 18px;font-size:12px;font-weight:bold;letter-spacing:.05em;text-transform:uppercase}.toplink{font-weight:normal;letter-spacing:0;text-transform:none}header.title{border:2px solid #000;border-top:0;padding:32px 30px}h1{font-size:clamp(28px,4vw,43px);line-height:1.12;margin:0;letter-spacing:-.025em}header.title p{margin:14px 0 0;font-size:14px}.body{border-left:2px solid #000;border-right:2px solid #000;border-bottom:2px solid #000;padding:12px 30px 28px}h2{font-size:21px;line-height:1.25;margin:32px 0 12px;border-top:2px solid #000;padding-top:18px}h2:first-child{border-top:0;margin-top:12px}p{margin:0 0 16px}ul,ol{padding-left:24px;margin:10px 0 20px}li{padding-left:3px;margin:7px 0}code{font-family:Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}th,td{border:1px solid #000;text-align:left;vertical-align:top;padding:10px}th{border-bottom:2px solid #000}tr{break-inside:avoid}.table-wrap{overflow-x:auto}.footer{margin-top:15px;font-size:12px;display:flex;justify-content:space-between;gap:15px}.index-list{list-style:none;margin:0;padding:0}.index-list li{margin:0;padding:0;border-top:1px solid #000}.index-list a{display:block;padding:14px 3px;text-decoration:none;font-weight:bold}.index-list a:hover{text-decoration:underline}.index-list small{display:block;font-weight:normal;margin-top:2px}.index-list li:last-child{border-bottom:1px solid #000}@media(max-width:600px){.page{padding:15px 12px 40px}.masthead{align-items:start;flex-direction:column;gap:6px}header.title{padding:25px 18px}.body{padding:10px 18px 20px}table{min-width:620px}.footer{flex-direction:column}}@media print{.page{max-width:none;padding:0}.masthead,.title,.body{border-color:#000}.footer{display:none}a{color:#000}h2{break-after:avoid}p,li{orphans:3;widows:3}}
+</style></head><body><div class="page"><div class="masthead"><span>Lewis Newnham / Engineering Portfolio</span><a class="toplink" href="index.html">All planning documents</a></div><header class="title"><h1>06: Exchange Lab</h1><p>Project plan</p></header><main class="body"><p><strong>Status:</strong> planned; no implementation or measured result is claimed.</p>
+<h2>Objective and inputs</h2>
+<p>Build a deterministic matching engine and assess optimisations without changing matching outcomes.</p>
+<p>Synthetic order flow; single threaded first version; no networking, clearing or production exchange readiness.</p>
+<h2>First release and boundaries</h2>
+<p>Price time priority and supported order types must be written down before implementation; optimise only after a correct reference exists.</p>
+<h2>Proposed design</h2>
+<p>Reference order book: matching and sequencing: event ledger: replay/differential tests: benchmark harness.</p>
+<p>These are initial design choices, subject to an architecture decision record before implementation. Interfaces, validation, errors and persistence must be specified at the relevant boundary.</p>
+<h2>Delivery sequence</h2>
+<ol>
+<li>Confirm inputs, assumptions and scope; record unanswered questions and the baseline.</li>
+<li>Write the requirements, data contracts, failure cases and verification matrix.</li>
+<li>Specify order lifecycle, price time priority, matching and accounting. Implement a simple reference and C++ candidate, replay identical order streams, then benchmark controlled changes.</li>
+<li>Review the implementation against the requirements, run the verification plan and preserve raw results.</li>
+<li>Write the case study with results, negative cases, limits and an independent rerun guide.</li>
+</ol>
+<h2>Verification and acceptance</h2>
+<p>Test FIFO ties, partial fills, cancels, invalid orders and conservation. Differentially compare every emitted event and final book for seeded workloads; benchmark only passing versions.</p>
+<p>The first release is accepted only when its documented requirements pass, a clean setup can run its checks and any failed or inconclusive checks are visible. Measurements are observations, not promised targets.</p>
+<h2>Evidence and metrics</h2>
+<p>Exact event equivalence and invariant failures; latency distribution and throughput with machine, compiler, workload and methodology recorded.</p>
+<p>Keep inputs or their authorised references, configuration, versions, seeds where relevant, commands, outputs and environment details with each run. Link every claim to a test or source.</p>
+<h2>Decisions and dependencies</h2>
+<p>Set supported order types, numeric representation and benchmark environment during design.</p>
+<p>See programme plan and engineering standard. Original briefs and case studies are in the source archive.</p>
+<h2>Detailed engineering pack</h2>
+<p>See the detailed engineering pack for requirements, module boundaries, decisions and verification.</p></main><footer class="footer"><span>Engineering portfolio / Planning documents</span><a href="index.html">Return to the index</a></footer></div></body></html>

@@ -1,0 +1,15 @@
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+web-app/frontend/dist/
+web-app/backend/static/
+*.log
+
+# Local website source and its earlier deployment archive
+/web-app/
+/dist/
+/archive/legacy-site/

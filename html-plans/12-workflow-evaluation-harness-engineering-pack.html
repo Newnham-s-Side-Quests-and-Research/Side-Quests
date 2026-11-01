@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>12: Workflow Evaluation Harness: engineering pack | Engineering Portfolio</title><style>
+:root{color-scheme:light}*{box-sizing:border-box}html{background:#fff;color:#000}body{margin:0;font:16px/1.65 Arial,Helvetica,sans-serif;color:#000;background:#fff}a{color:#000;text-decoration:underline;text-underline-offset:3px}a:focus-visible{outline:3px solid #000;outline-offset:3px}.page{max-width:1050px;margin:0 auto;padding:36px 28px 70px}.masthead{display:flex;justify-content:space-between;gap:20px;align-items:center;border:2px solid #000;padding:14px 18px;font-size:12px;font-weight:bold;letter-spacing:.05em;text-transform:uppercase}.toplink{font-weight:normal;letter-spacing:0;text-transform:none}header.title{border:2px solid #000;border-top:0;padding:32px 30px}h1{font-size:clamp(28px,4vw,43px);line-height:1.12;margin:0;letter-spacing:-.025em}header.title p{margin:14px 0 0;font-size:14px}.body{border-left:2px solid #000;border-right:2px solid #000;border-bottom:2px solid #000;padding:12px 30px 28px}h2{font-size:21px;line-height:1.25;margin:32px 0 12px;border-top:2px solid #000;padding-top:18px}h2:first-child{border-top:0;margin-top:12px}p{margin:0 0 16px}ul,ol{padding-left:24px;margin:10px 0 20px}li{padding-left:3px;margin:7px 0}code{font-family:Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}th,td{border:1px solid #000;text-align:left;vertical-align:top;padding:10px}th{border-bottom:2px solid #000}tr{break-inside:avoid}.table-wrap{overflow-x:auto}.footer{margin-top:15px;font-size:12px;display:flex;justify-content:space-between;gap:15px}.index-list{list-style:none;margin:0;padding:0}.index-list li{margin:0;padding:0;border-top:1px solid #000}.index-list a{display:block;padding:14px 3px;text-decoration:none;font-weight:bold}.index-list a:hover{text-decoration:underline}.index-list small{display:block;font-weight:normal;margin-top:2px}.index-list li:last-child{border-bottom:1px solid #000}@media(max-width:600px){.page{padding:15px 12px 40px}.masthead{align-items:start;flex-direction:column;gap:6px}header.title{padding:25px 18px}.body{padding:10px 18px 20px}table{min-width:620px}.footer{flex-direction:column}}@media print{.page{max-width:none;padding:0}.masthead,.title,.body{border-color:#000}.footer{display:none}a{color:#000}h2{break-after:avoid}p,li{orphans:3;widows:3}}
+</style></head><body><div class="page"><div class="masthead"><span>Lewis Newnham / Engineering Portfolio</span><a class="toplink" href="index.html">All planning documents</a></div><header class="title"><h1>12: Workflow Evaluation Harness: engineering pack</h1><p>Engineering pack</p></header><main class="body"><p><strong>Status:</strong> proposed design for review; no implementation or results claimed. Read with the common standard, project plan and original technical brief and case study.</p>
+<h2>Purpose and first release</h2>
+<p>Provide a local, deterministic replay runner for labelled cases and baseline/candidate workflow adapters. Produce transparent scores and gate decisions for human review. It never makes or executes a deployment decision. The first release specification is authoritative for R1 R7 and is extended here.</p>
+<h2>Modules and contracts</h2>
+<p><code>case_library</code> loads schema versioned JSON: case ID, input, expected fields, expected abstention, category, split and source rights; <code>adapters</code> expose <code>run(input, settings) -&gt; structured output | typed error</code> and stable version identity; <code>runner</code> submits the identical ordered case set to both versions; <code>scoring</code> contains pure field/abstention scorers with explicit missing output policy; <code>gates</code> evaluates versioned rules and minimum sample sizes as pass/fail/incomplete; <code>report</code> writes machine readable manifest, per case outcomes and human readable summary. Default fixtures and deterministic adapters require no network or external model.</p>
+<h2>Requirements and verification</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement and acceptance</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EH 01</td>
+<td>Reject invalid schema, duplicate case IDs and unrecognised versions before execution.</td>
+<td>Malformed, duplicate and mismatched version cases, with actionable errors.</td>
+</tr>
+<tr>
+<td>EH 02</td>
+<td>Baseline and candidate receive identical case identities and settings; errors remain visible.</td>
+<td>Recording adapter verifies ordered inputs; inject timeout, exception and invalid result.</td>
+</tr>
+<tr>
+<td>EH 03</td>
+<td>Field accuracy and abstention scores include explicit denominators and case failures.</td>
+<td>Hand calculated confusion table, missing values, wrong fields and both abstention errors.</td>
+</tr>
+<tr>
+<td>EH 04</td>
+<td>Gate evaluation gives pass, fail or incomplete; missing evidence never passes.</td>
+<td>Threshold boundary, insufficient cases, absent metric and error handling fixtures.</td>
+</tr>
+<tr>
+<td>EH 05</td>
+<td>Report contains case set hash, adapter versions, settings, results, errors and gate version.</td>
+<td>Replay from clean checkout and independently recompute a known report.</td>
+</tr>
+<tr>
+<td>EH 06</td>
+<td>Defective candidates and sound changes are both represented.</td>
+<td>Inject wrong field, false accept and false abstain defects; measure caught defects and false blocks.</td>
+</tr>
+<tr>
+<td>EH 07</td>
+<td>No gate triggers deployment; a person records the outcome.</td>
+<td>Inspect interfaces and verify no external release action; reviewer decision record required.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Decisions and delivery</h2>
+<p>Decide canonical JSON hashing, adapter timeout, missing field scoring, minimum cases, threshold approval and exit codes. Build schema/loader; deterministic runner; independent scorers; gates; reports and planted defect tests; conduct clean environment review. Later add repeat trials and uncertainty, latency/cost accounting, model settings and gateway backed adapters. Original brief's regression detection, false block rate, latency/cost and variance comparisons are full research milestones, not claims of the first deterministic slice.</p></main><footer class="footer"><span>Engineering portfolio / Planning documents</span><a href="index.html">Return to the index</a></footer></div></body></html>

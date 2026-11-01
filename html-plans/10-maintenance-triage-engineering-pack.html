@@ -1,0 +1,46 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>10: Maintenance Triage: engineering pack | Engineering Portfolio</title><style>
+:root{color-scheme:light}*{box-sizing:border-box}html{background:#fff;color:#000}body{margin:0;font:16px/1.65 Arial,Helvetica,sans-serif;color:#000;background:#fff}a{color:#000;text-decoration:underline;text-underline-offset:3px}a:focus-visible{outline:3px solid #000;outline-offset:3px}.page{max-width:1050px;margin:0 auto;padding:36px 28px 70px}.masthead{display:flex;justify-content:space-between;gap:20px;align-items:center;border:2px solid #000;padding:14px 18px;font-size:12px;font-weight:bold;letter-spacing:.05em;text-transform:uppercase}.toplink{font-weight:normal;letter-spacing:0;text-transform:none}header.title{border:2px solid #000;border-top:0;padding:32px 30px}h1{font-size:clamp(28px,4vw,43px);line-height:1.12;margin:0;letter-spacing:-.025em}header.title p{margin:14px 0 0;font-size:14px}.body{border-left:2px solid #000;border-right:2px solid #000;border-bottom:2px solid #000;padding:12px 30px 28px}h2{font-size:21px;line-height:1.25;margin:32px 0 12px;border-top:2px solid #000;padding-top:18px}h2:first-child{border-top:0;margin-top:12px}p{margin:0 0 16px}ul,ol{padding-left:24px;margin:10px 0 20px}li{padding-left:3px;margin:7px 0}code{font-family:Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}th,td{border:1px solid #000;text-align:left;vertical-align:top;padding:10px}th{border-bottom:2px solid #000}tr{break-inside:avoid}.table-wrap{overflow-x:auto}.footer{margin-top:15px;font-size:12px;display:flex;justify-content:space-between;gap:15px}.index-list{list-style:none;margin:0;padding:0}.index-list li{margin:0;padding:0;border-top:1px solid #000}.index-list a{display:block;padding:14px 3px;text-decoration:none;font-weight:bold}.index-list a:hover{text-decoration:underline}.index-list small{display:block;font-weight:normal;margin-top:2px}.index-list li:last-child{border-bottom:1px solid #000}@media(max-width:600px){.page{padding:15px 12px 40px}.masthead{align-items:start;flex-direction:column;gap:6px}header.title{padding:25px 18px}.body{padding:10px 18px 20px}table{min-width:620px}.footer{flex-direction:column}}@media print{.page{max-width:none;padding:0}.masthead,.title,.body{border-color:#000}.footer{display:none}a{color:#000}h2{break-after:avoid}p,li{orphans:3;widows:3}}
+</style></head><body><div class="page"><div class="masthead"><span>Lewis Newnham / Engineering Portfolio</span><a class="toplink" href="index.html">All planning documents</a></div><header class="title"><h1>10: Maintenance Triage: engineering pack</h1><p>Engineering pack</p></header><main class="body"><p><strong>Status:</strong> proposed design for review; no implementation or results claimed. Read with the common standard, project plan and original technical brief and case study.</p>
+<h2>Purpose and scope</h2>
+<p>Evaluate conservative triage of synthetic property reports, with safety and safeguarding reports escalated promptly to a person. It is a research prototype, not a live safety service and cannot guarantee no harm. No real tenants, automatic contractor dispatch or emergency response.</p>
+<h2>Modules and contracts</h2>
+<p><code>intake</code> validates synthetic report ID, timestamp, unit and text; <code>rules</code> detects specified risk language and returns reason; <code>classifier</code> is an optional replaceable adapter; <code>policy</code> routes urgent, routine, ambiguous and system error cases; <code>queue</code> stores a durable escalation record; <code>review</code> captures a person's decision; <code>evaluation</code> scores labelled held out cases and records time. Safety escalation takes precedence over grouping and classification. A classifier timeout, malformed output, uncertain case or unavailable dependency routes to an explicitly monitored human review queue; if persistence itself fails, return a hard failure rather than claiming escalation occurred.</p>
+<h2>Requirements and verification</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement and acceptance</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MT 01</td>
+<td>Every accepted report receives a durable ID and auditable routing outcome or an explicit intake failure.</td>
+<td>Simulate queue/storage failure, duplicate input and recovery; no successful acknowledgement before durable write.</td>
+</tr>
+<tr>
+<td>MT 02</td>
+<td>Defined urgent patterns escalate without waiting for classifier or deduplication.</td>
+<td>Gas, fire, flood and safeguarding fixtures including mixed routine text.</td>
+</tr>
+<tr>
+<td>MT 03</td>
+<td>Unknown, failed and low confidence predictions route to human review.</td>
+<td>Timeout, invalid result, missing text and boundary confidence tests.</td>
+</tr>
+<tr>
+<td>MT 04</td>
+<td>Duplicate grouping cannot suppress urgent records or erase links to originals.</td>
+<td>Cross unit duplicates, multi unit incident and urgent/routine conflict.</td>
+</tr>
+<tr>
+<td>MT 05</td>
+<td>Compare rules only, model only and combined approaches on frozen held out cases; report every missed safety case.</td>
+<td>Compute category recall, false escalation, simulated elapsed time and reviewer burden with denominators and intervals.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Decisions, risks and milestones</h2>
+<p>A domain owner must define hazard categories, escalation recipient, clock start/stop, queue monitoring, failure response, realistic workload and review thresholds. Build synthetic intake and deterministic safety policy first; later add optional classifier, duplicate grouping and comparative study. Inject unclear phrasing and unavailable services. The original question's guarantee cannot be established from synthetic tests; live deployment requires independent safety, safeguarding, privacy and legal review.</p></main><footer class="footer"><span>Engineering portfolio / Planning documents</span><a href="index.html">Return to the index</a></footer></div></body></html>

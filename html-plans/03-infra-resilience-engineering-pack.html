@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>03: Infra Resilience: engineering pack | Engineering Portfolio</title><style>
+:root{color-scheme:light}*{box-sizing:border-box}html{background:#fff;color:#000}body{margin:0;font:16px/1.65 Arial,Helvetica,sans-serif;color:#000;background:#fff}a{color:#000;text-decoration:underline;text-underline-offset:3px}a:focus-visible{outline:3px solid #000;outline-offset:3px}.page{max-width:1050px;margin:0 auto;padding:36px 28px 70px}.masthead{display:flex;justify-content:space-between;gap:20px;align-items:center;border:2px solid #000;padding:14px 18px;font-size:12px;font-weight:bold;letter-spacing:.05em;text-transform:uppercase}.toplink{font-weight:normal;letter-spacing:0;text-transform:none}header.title{border:2px solid #000;border-top:0;padding:32px 30px}h1{font-size:clamp(28px,4vw,43px);line-height:1.12;margin:0;letter-spacing:-.025em}header.title p{margin:14px 0 0;font-size:14px}.body{border-left:2px solid #000;border-right:2px solid #000;border-bottom:2px solid #000;padding:12px 30px 28px}h2{font-size:21px;line-height:1.25;margin:32px 0 12px;border-top:2px solid #000;padding-top:18px}h2:first-child{border-top:0;margin-top:12px}p{margin:0 0 16px}ul,ol{padding-left:24px;margin:10px 0 20px}li{padding-left:3px;margin:7px 0}code{font-family:Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}th,td{border:1px solid #000;text-align:left;vertical-align:top;padding:10px}th{border-bottom:2px solid #000}tr{break-inside:avoid}.table-wrap{overflow-x:auto}.footer{margin-top:15px;font-size:12px;display:flex;justify-content:space-between;gap:15px}.index-list{list-style:none;margin:0;padding:0}.index-list li{margin:0;padding:0;border-top:1px solid #000}.index-list a{display:block;padding:14px 3px;text-decoration:none;font-weight:bold}.index-list a:hover{text-decoration:underline}.index-list small{display:block;font-weight:normal;margin-top:2px}.index-list li:last-child{border-bottom:1px solid #000}@media(max-width:600px){.page{padding:15px 12px 40px}.masthead{align-items:start;flex-direction:column;gap:6px}header.title{padding:25px 18px}.body{padding:10px 18px 20px}table{min-width:620px}.footer{flex-direction:column}}@media print{.page{max-width:none;padding:0}.masthead,.title,.body{border-color:#000}.footer{display:none}a{color:#000}h2{break-after:avoid}p,li{orphans:3;widows:3}}
+</style></head><body><div class="page"><div class="masthead"><span>Lewis Newnham / Engineering Portfolio</span><a class="toplink" href="index.html">All planning documents</a></div><header class="title"><h1>03: Infra Resilience: engineering pack</h1><p>Engineering pack</p></header><main class="body"><p><strong>Status:</strong> proposed design for review; no implementation or results claimed. Read with the common standard, project plan and original technical brief and case study.</p>
+<h2>Purpose and boundaries</h2>
+<p>Rank plausible initiating faults from synthetic plant event streams and compare against threshold alarms. Scope is an offline conveyor/drive/sensor model; no PLC connection, protective action or certified industrial safety logic.</p>
+<h2>Architecture and contracts</h2>
+<p><code>plant</code> defines directed equipment dependencies and discrete PLC style state; <code>faults</code> injects motor, sensor, network and timing faults; <code>telemetry</code> emits schema versioned events <code>(event_id, event_time, asset, signal, value, quality)</code>; <code>baseline</code> raises threshold alarms; <code>diagnosis</code> ranks candidate causes with evidence and assumptions; <code>review</code> presents ranked results and uncertainty; <code>evaluation</code> joins predictions to independently planted ground truth. Missing or out of order telemetry is explicit, not treated as healthy.</p>
+<h2>Requirements and verification</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement and acceptance</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IR 01</td>
+<td>Each seeded scenario records topology, injected fault and complete event trace.</td>
+<td>Replay and check fault location/onset against scenario manifest.</td>
+</tr>
+<tr>
+<td>IR 02</td>
+<td>Baseline and ranker process the same events with a stable ordering rule.</td>
+<td>Feed identical streams including same timestamp events and missing quality flags.</td>
+</tr>
+<tr>
+<td>IR 03</td>
+<td>Each ranked cause includes evidence IDs and declared confidence/ambiguity.</td>
+<td>Check citations exist; ties and absent evidence return ambiguous or unknown.</td>
+</tr>
+<tr>
+<td>IR 04</td>
+<td>Report top k diagnosis accuracy and false leads against ground truth, including unranked cases.</td>
+<td>Hand calculated rankings; single, simultaneous, hidden and correlated fault fixtures.</td>
+</tr>
+<tr>
+<td>IR 05</td>
+<td>No output controls plant equipment.</td>
+<td>Interface inspection and tests showing no actuator/PLC adapter in first release.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Decisions and delivery</h2>
+<p>Freeze plant topology, fault catalogue, event granularity, causal assumptions, ranking rule, baseline and held out scenarios before scoring. Produce normal and faulted traces; implement baseline then dependency ranker; test missing events, clock skew and multiple faults; review incorrect explanations. Measure top 1/top k, time from first signal to ranked output and ambiguous cases with denominators. Choose sample size and uncertainty before campaign; do not mistake correlations for proof of causality.</p>
+<h2>Original brief coverage</h2>
+<p>Drive, occupancy sensor and controller state modelling; multiple fault types; threshold baseline; dependency aware ranking and missing data ambiguity are required. Engineer review is a human evaluation step; live plant integration is excluded.</p></main><footer class="footer"><span>Engineering portfolio / Planning documents</span><a href="index.html">Return to the index</a></footer></div></body></html>
