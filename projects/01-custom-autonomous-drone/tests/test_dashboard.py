@@ -46,7 +46,7 @@ class DashboardTests(unittest.TestCase):
             report = json.load(response)
             self.assertEqual(len(report['trace']), 300)
             self.assertIn('No original aircraft behaviour or physical flight safety is verified', report['limitations'])
-        for path in ('/app.js', '/style.css', '/api/health'):
+        for path in ('/app.js', '/style.css', '/calculations', '/calculations.css', '/api/health'):
             with urlopen(self.url + path, timeout=3) as response: self.assertEqual(response.status, 200)
 
     def test_unknown_paths_and_writes_are_not_supported(self):

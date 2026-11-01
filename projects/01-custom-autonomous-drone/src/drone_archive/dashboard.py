@@ -21,7 +21,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         routes = {'/': ('index.html', 'text/html; charset=utf-8'),
                   '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
-                  '/style.css': ('style.css', 'text/css; charset=utf-8')}
+                  '/style.css': ('style.css', 'text/css; charset=utf-8'),
+                  '/calculations': ('calculations.html', 'text/html; charset=utf-8'),
+                  '/calculations.css': ('calculations.css', 'text/css; charset=utf-8')}
         if self.path == '/api/mission':
             return self.respond(200, 'application/json; charset=utf-8', self.server.mission)
         if self.path == '/api/scenarios':

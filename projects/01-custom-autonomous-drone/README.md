@@ -16,6 +16,8 @@ A separate three dimensional kinematic mission plans a route through a synthetic
 
 A separate point mass model calculates movement in three axes using prescribed upward thrust, gravity and linear wind drag. It holds the aircraft level and does not simulate attitude or real motor failure. It is independent of the grid mission and the vertical controller.
 
+A separate rigid body model adds a quaternion attitude, rotor moments, body angular rates and an assumed motor response. It uses illustrative parameters and prescribed motor commands. It is not yet connected to a controller or the dashboard playback.
+
 ## Run the checks
 
 From this folder run:
@@ -70,6 +72,14 @@ python -m drone_archive point-mass fixtures/point-mass-scenario.json --output re
 ```
 
 The output is synthetic and must not be used to control an aircraft.
+
+To run the rigid body example:
+
+```powershell
+python -m drone_archive rigid-body fixtures/rigid-body-scenario.json --output results/rigid-body.json
+```
+
+The local dashboard links to a mathematical record with numbered equations and worked examples. Its assumptions are identified alongside the calculations.
 
 ## Read before using the model
 

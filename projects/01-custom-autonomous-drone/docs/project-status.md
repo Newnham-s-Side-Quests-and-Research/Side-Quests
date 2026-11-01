@@ -5,7 +5,7 @@ This record separates the builder account, the reconstruction and the evidence f
 | Area | Current work | Remaining work |
 | --- | --- | --- |
 | Evidence | Records, hashes and rights checks have synthetic tests. | Recover any external records if they become available. Review historical claims and publication rights. |
-| Vertical control | A synthetic vertical loop connects a two state estimator to a bounded PID style controller. A separate level point mass model calculates motion in three axes under prescribed motor thrust and wind drag. | Define and validate three dimensional dynamics, motor response, attitude control and physical limits. |
+| Vertical control | A synthetic vertical loop connects a two state estimator to a bounded PID style controller. Separate models include level point mass motion and rigid body motion with attitude and assumed motor response. | Validate dynamics against an independent simulator and measured components. Implement attitude control and physical limits. |
 | Sensor fusion | Synthetic pressure, altitude and motion are used in the vertical estimator. | Define frames, calibration, timing, sensor bias states and a full attitude and position estimator. Validate against independent data. |
 | Mission planning | Two dimensional and three dimensional grid planners have synthetic route tests. A kinematic mission pauses when its position signal is unavailable. | Add a validated map, changing obstacles, geofences and a trajectory that accounts for vehicle dynamics. Connect planning to control only after interface review. |
 | Vision | A synthetic grayscale region detector has tests. | Define the vision task and camera. Add calibration, representative labelled images, evaluation and failure handling. |

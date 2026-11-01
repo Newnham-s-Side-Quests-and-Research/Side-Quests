@@ -32,7 +32,9 @@ A simple detector finds bright connected regions in synthetic grayscale images. 
 
 Telemetry snapshots expose the simulated readings and link availability flags. They mark the four motor positions, battery and geographic position as not modelled. A local read only screen can replay the closed loop simulation. There is no login, live wireless connection or command interface yet.
 
-A separate point mass example calculates position and velocity in three axes from four prescribed upward thrust values, gravity and linear drag relative to wind. It stops at a flat ground surface. The aircraft is held level and there is no torque or attitude model. Motor loss changes total thrust but does not represent the rotation or other effects on a real aircraft. It is not connected to the estimator, route planner or controller.
+A separate point mass example calculates position and velocity in three axes from four prescribed upward thrust values, gravity and linear drag relative to wind. It stops at a flat ground surface. The aircraft is held level and there is no torque or attitude model. Motor loss changes total thrust but does not represent the rotation or other effects on a real aircraft.
+
+A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. It has no sensor model or controller and has not been validated against an independent flight simulator or physical aircraft. Neither model is connected to the estimator, route planner or controller.
 
 ## Later engineering stages
 

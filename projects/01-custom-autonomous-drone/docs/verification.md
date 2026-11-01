@@ -2,6 +2,8 @@
 
 The current checks run locally with synthetic data. The automated suite runs in the project folder. It can also be run from a clean temporary copy. The dashboard checks use a local loopback connection and require no external network. The suite covers register validation, duplicate records, unknown references, hash changes, missing files, path escapes and rights states.
 
+The rigid body tests cover balanced hover, a rotated thrust direction, the first order motor response, rotor moment signs, constant angular rotation and a discrete free fall case. These checks do not establish accuracy for all flight conditions. The illustrative parameter values have not been measured from the original aircraft.
+
 The signal tests cover a hand calculated motion step, repeatability with a fixed seed, altitude bias, missing altitude samples, output bounds and invalid configuration. They also check a free fall example, integral holding, ideal pressure conversion, ideal motion readings and simulated link outages.
 
 The vertical estimator is checked against hand calculated prediction and observation updates. Its pressure derivative is compared with a numerical approximation. The tests cover rejected outliers, invalid inputs, covariance checks and a deterministic synthetic replay with missing position samples.
