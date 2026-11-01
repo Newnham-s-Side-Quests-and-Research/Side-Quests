@@ -17,3 +17,15 @@ web-app/backend/static/
 # Local screenshots and generated evaluation reports
 /artifacts/
 /projects/*/results/
+
+# Portfolio documents and plans remain local
+*.md
+/source/
+/plans/
+/engineering-packs/
+/html-plans/
+/projects/*/docs/
+
+# Local calculation record
+/projects/01-custom-autonomous-drone/dashboard/calculations.html
+/projects/01-custom-autonomous-drone/dashboard/calculations.css

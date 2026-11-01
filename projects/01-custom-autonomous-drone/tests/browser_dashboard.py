@@ -80,14 +80,6 @@ async def run(base_url, output):
                 if 'blocked cell' not in (await page.locator('#navigation-outcome').inner_text()).lower():
                     raise AssertionError('Obstacle contact is not shown')
                 await page.screenshot(path=str(output / f'{name}.png'), full_page=True)
-                await page.get_by_role('link', name='Read the mathematical calculations').click()
-                if await page.locator('math[display="block"]').count() != 8:
-                    raise AssertionError('Numbered mathematical equations are missing')
-                if not await page.evaluate('document.documentElement.scrollWidth <= innerWidth'):
-                    raise AssertionError('Calculation page overflows the viewport')
-                if 'not measurements' not in (await page.locator('.notice').inner_text()).lower():
-                    raise AssertionError('Calculation assumptions are not visible')
-                await page.screenshot(path=str(output / f'{name}-calculations.png'), full_page=True)
                 if errors:
                     raise AssertionError(f'Browser errors: {errors}')
                 print(f'{name}: passed')
