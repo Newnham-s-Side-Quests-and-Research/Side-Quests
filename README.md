@@ -14,6 +14,6 @@ The source folder contains the original portfolio. The plans folder contains the
 
 The drone is an earlier build. I am working to recover its original files and evidence so I can distinguish what was built and tested from what was planned.
 
-The other projects are proposals. Their folders do not yet contain completed implementations or verified results. The Workflow Evaluation Harness is the first project I plan to build.
+Most other projects are proposals. The Workflow Evaluation Harness now has an initial local implementation that has been tested with a small set of synthetic cases. Its results do not establish real world accuracy.
 
 The aim is to build and test the projects in stages. I will add code, results and evidence as the work progresses.

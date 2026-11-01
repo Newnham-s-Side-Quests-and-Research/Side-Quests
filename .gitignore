@@ -13,3 +13,7 @@ web-app/backend/static/
 /web-app/
 /dist/
 /archive/legacy-site/
+
+# Local screenshots and generated evaluation reports
+/artifacts/
+/projects/*/results/

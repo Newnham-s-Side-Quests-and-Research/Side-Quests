@@ -1,6 +1,6 @@
 # Workflow Evaluation Harness: first release specification
 
-**Status:** proposed; not implemented. This is the first implementation candidate under the [programme](../programme-plan.md).
+**Status:** the initial local implementation is in progress and has synthetic tests. This specification remains the design baseline. Independent review and further evaluation are outstanding.
 
 ## Goal
 

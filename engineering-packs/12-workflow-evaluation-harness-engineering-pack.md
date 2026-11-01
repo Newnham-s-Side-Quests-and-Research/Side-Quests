@@ -1,6 +1,6 @@
 # 12: Workflow Evaluation Harness: engineering pack
 
-**Status:** proposed design for review; no implementation or results claimed. Read with the [common standard](00-engineering-pack-standard.md), [project plan](../plans/12-workflow-evaluation-harness.md) and original [technical brief](../source/Engineering%20Portfolio/Project%2012%20Workflow%20Evaluation%20Harness/02%20Technical%20Two%20Pager.pdf) and [case study](../source/Engineering%20Portfolio/Project%2012%20Workflow%20Evaluation%20Harness/03%20Case%20Study.pdf).
+**Status:** an initial local implementation has passed synthetic mechanism tests. This design remains subject to review. No real world accuracy or safety result is claimed. Read with the [common standard](00-engineering-pack-standard.md), [project plan](../plans/12-workflow-evaluation-harness.md) and original [technical brief](../source/Engineering%20Portfolio/Project%2012%20Workflow%20Evaluation%20Harness/02%20Technical%20Two%20Pager.pdf) and [case study](../source/Engineering%20Portfolio/Project%2012%20Workflow%20Evaluation%20Harness/03%20Case%20Study.pdf).
 
 ## Purpose and first release
 Provide a local, deterministic replay runner for labelled cases and baseline/candidate workflow adapters. Produce transparent scores and gate decisions for human review. It never makes or executes a deployment decision. The [first release specification](../plans/12-first-release-specification.md) is authoritative for R1 R7 and is extended here.
