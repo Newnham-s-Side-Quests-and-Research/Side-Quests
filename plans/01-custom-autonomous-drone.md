@@ -1,6 +1,6 @@
 # 01: Custom Autonomous Drone
 
-**Status:** planned; no implementation or measured result is claimed.
+**Status:** an illustrative simulation and evidence tools are in progress. The original files are not available here. No original flight result is claimed.
 
 ## Objective and inputs
 

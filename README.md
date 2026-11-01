@@ -12,7 +12,7 @@ The source folder contains the original portfolio. The plans folder contains the
 
 ## Where things stand
 
-The drone is an earlier build. I am working to recover its original files and evidence so I can distinguish what was built and tested from what was planned.
+The drone is an earlier build. Its original files are not available here. The drone project now includes a new illustrative simulation and records what remains unverified.
 
 Most other projects are proposals. The Workflow Evaluation Harness now has an initial local implementation that has been tested with a small set of synthetic cases. Its results do not establish real world accuracy.
 
