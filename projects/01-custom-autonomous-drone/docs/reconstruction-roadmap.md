@@ -2,7 +2,7 @@
 
 ## What the builder remembers
 
-Lewis describes autonomous flight with position adjustment, computer vision, path planning and geolocation. He describes a five inch racing frame, a four cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth and PID control.
+Lewis describes autonomous flight with position adjustment, computer vision, path planning and geolocation. He describes a five inch racing frame, a three cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth and PID control.
 
 He also describes a private wireless connection and a telemetry screen showing sensor information and the condition of the aircraft. This is the builder account. The original code, measurements and component records are not available in this workspace. The exact board, sensors, camera, radio arrangement and original network design remain unconfirmed.
 

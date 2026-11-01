@@ -29,6 +29,45 @@ function render() {
   find('acceleration').textContent = format(row.sensors.imu_acceleration_m_s2, 'm/s²');
   find('variance').textContent = format(row.estimate.covariance[0][0], 'm²', 4);
   find('stale').textContent = String(row.estimate.unobserved_steps);
+  const battery = current.battery_example;
+  const power = battery.trace[position];
+  const config = current.report.configuration;
+  const fixed = (value, digits = 2) => Number(value).toFixed(digits);
+  find('battery-voltage').textContent = format(power.voltage_v, 'V');
+  find('battery-current').textContent = format(power.current_a, 'A');
+  find('battery-power').textContent = format(power.power_w, 'W');
+  find('battery-used').textContent = format(power.charge_used_mah, 'mAh');
+  find('battery-remaining').textContent = format(power.remaining_capacity_mah, 'mAh');
+  find('battery-energy').textContent = format(power.energy_used_wh, 'Wh', 4);
+  find('formula-nominal').textContent = `Nominal voltage = cells times nominal voltage per cell = ${battery.cells_in_series} times 3.7 V = ${fixed(battery.nominal_voltage_v)} V.`;
+  find('formula-full').textContent = `Full charge reference = cells times full charge voltage per cell = ${battery.cells_in_series} times 4.2 V = ${fixed(battery.full_charge_voltage_v)} V.`;
+  find('formula-power').textContent = `Power = voltage times current = ${fixed(power.voltage_v)} V times ${fixed(power.current_a)} A = ${fixed(power.power_w)} W.`;
+  find('formula-charge').textContent = `Charge used = current times elapsed seconds times 1000 divided by 3600 = ${fixed(power.current_a)} times ${fixed(row.time_s)} times 1000 divided by 3600 = ${fixed(power.charge_used_mah)} mAh.`;
+  find('formula-remaining').textContent = `Estimated charge remaining = maximum of zero and capacity minus charge used = max(0, ${fixed(battery.capacity_mah)} minus ${fixed(power.charge_used_mah)}) = ${fixed(power.remaining_capacity_mah)} mAh.`;
+  find('formula-energy').textContent = `Energy used = power times elapsed seconds divided by 3600 = ${fixed(power.power_w)} times ${fixed(row.time_s)} divided by 3600 = ${fixed(power.energy_used_wh, 4)} Wh.`;
+  const control = row.control;
+  if (control.state === 'tracking') {
+    const held = control.integral_error_m_s !== control.proposed_integral_m_s;
+    find('formula-error').textContent = `Altitude error = target minus estimated altitude = ${fixed(config.target_altitude_m)} minus ${fixed(row.estimate.altitude_m)} = ${fixed(control.error_m)} m.`;
+    find('formula-integral').textContent = `Proposed integral = previous integral plus error times time step = ${fixed(control.integral_before_m_s, 4)} plus ${fixed(control.error_m, 4)} times ${fixed(config.dt_seconds, 4)} = ${fixed(control.proposed_integral_m_s, 4)} m s. ${held ? 'The stored integral was held because the command was saturated.' : 'The proposed integral was stored.'}`;
+    find('formula-thrust').textContent = `Unbounded thrust = mass times gravity plus proportional gain times error plus integral gain times proposed integral minus velocity gain times estimated velocity = (${fixed(config.mass_kg)} times ${fixed(config.gravity_m_s2)}) plus (${fixed(config.kp_n_per_m)} times ${fixed(control.error_m)}) plus (${fixed(config.ki_n_per_m_second)} times ${fixed(control.proposed_integral_m_s, 4)}) minus (${fixed(config.kd_n_per_m_s)} times ${fixed(row.estimate.velocity_m_s)}) = ${fixed(control.unclamped_thrust_n)} N.`;
+    find('formula-clamp').textContent = `Simulated thrust = unbounded thrust limited to 0 through ${fixed(config.max_thrust_n)} N = ${fixed(control.thrust_n)} N.`;
+  } else {
+    find('formula-error').textContent = 'The model is in its degraded state so the controller does not calculate a tracking error for this sample.';
+    find('formula-integral').textContent = `The integral is held at ${fixed(control.integral_error_m_s, 4)} m s.`;
+    find('formula-thrust').textContent = 'No tracking command is calculated in the degraded state.';
+    find('formula-clamp').textContent = 'The model sets simulated thrust to 0 N as a test convention. This is not a flight safety procedure.';
+  }
+  const update = row.updates.pressure;
+  if (update) {
+    find('formula-innovation').textContent = `Pressure innovation = measured pressure minus predicted pressure = ${fixed(row.sensors.pressure_pa)} minus ${fixed(update.predicted_observation)} = ${fixed(update.innovation)} Pa.`;
+    find('formula-variance').textContent = `Innovation variance = pressure derivative squared times prior altitude variance plus observation variance = ${fixed(update.measurement_derivative, 4)} squared times ${fixed(update.prior_altitude_variance, 6)} plus ${fixed(update.observation_variance, 2)} = ${fixed(update.innovation_variance, 4)} Pa squared.`;
+    find('formula-gain').textContent = `Normalised innovation squared = innovation squared divided by innovation variance = ${fixed(update.innovation, 4)} squared divided by ${fixed(update.innovation_variance, 4)} = ${fixed(update.normalised_innovation_squared, 4)}. The limit is ${fixed(config.innovation_limit)}. The observation was ${update.accepted ? `accepted with altitude gain ${fixed(update.altitude_gain, 6)}` : 'rejected and no gain was applied'}.`;
+  } else {
+    find('formula-innovation').textContent = 'There is no pressure observation to calculate for this sample.';
+    find('formula-variance').textContent = 'No pressure innovation variance was calculated.';
+    find('formula-gain').textContent = 'No pressure update was applied.';
+  }
   find('step').value = position;
   find('step-label').textContent = `${position + 1} / ${trace.length}`;
   const x = trace.length > 1 ? position * 800 / (trace.length - 1) : 0;

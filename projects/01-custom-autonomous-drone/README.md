@@ -4,7 +4,7 @@ This project records an earlier drone build and develops a separate software rec
 
 ## What is known
 
-Lewis describes the original aircraft as a five inch racing frame with a four cell lithium polymer battery and a custom power distribution board. His account includes a Raspberry Pi 3, an Arduino S3 mini, pressure and motion sensors, WiFi, Bluetooth and PID control. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The exact board and sensor models have not been confirmed from surviving files.
+Lewis describes the original aircraft as a five inch racing frame with a three cell lithium polymer battery and a custom power distribution board. His account includes a Raspberry Pi 3, an Arduino S3 mini, pressure and motion sensors, WiFi, Bluetooth and PID control. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The exact board and sensor models have not been confirmed from surviving files.
 
 ## What exists here
 
@@ -45,7 +45,7 @@ $env:PYTHONPATH = "src"
 python -m drone_archive dashboard fixtures/closed-loop-scenario.json
 ```
 
-Open the local address printed by the command. The screen replays four synthetic scenarios and shows their metrics. A run can be downloaded for inspection. The screen cannot control an aircraft. It is bound to the local machine and has no login or remote access service. The scenarios and metrics document explains what each figure means.
+Open the local address printed by the command. The screen replays four synthetic scenarios and shows their metrics. A run can be downloaded for inspection. The screen cannot control an aircraft. It is bound to the local machine and has no login or remote access service. The scenarios and metrics document explains what each figure means. The formulas and component candidates document records the three cell battery references and the assumptions behind the power example.
 
 To write the closed loop trace instead:
 
@@ -56,3 +56,7 @@ python -m drone_archive closed fixtures/closed-loop-scenario.json --output resul
 ## Read before using the model
 
 The architecture document explains the equations and assumptions. The reconstruction roadmap separates the implemented components from the work still needed for autonomy, computer vision and real connectivity. The verification record says what the tests cover. The evidence gaps document separates the account of the original build from new work. None of this establishes flight safety, airworthiness or the behaviour of the original hardware.
+
+## Browser checks
+
+The optional browser check requires the Python Playwright package and a compatible Chromium browser. Start the local dashboard first. Set the browser executable through the `BROWSER_EXECUTABLE` environment variable if needed. Then run `python tests/browser_dashboard.py`. It checks the formulas and interactions at three screen sizes and writes screenshots to the local results folder.

@@ -28,6 +28,10 @@ class EstimatorTests(unittest.TestCase):
         self.assertAlmostEqual(estimator.altitude_m, 8)
         self.assertAlmostEqual(estimator.covariance[0][0], 0.8)
         self.assertAlmostEqual(result['normalised_innovation_squared'], 20)
+        self.assertAlmostEqual(result['innovation_variance'], 5)
+        self.assertAlmostEqual(result['altitude_gain'], 0.8)
+        self.assertEqual(result['predicted_observation'], 0)
+        self.assertEqual(result['measurement_derivative'], 1)
 
     def test_pressure_jacobian_and_update_direction(self):
         height = 100.0; delta = 0.01
@@ -44,6 +48,7 @@ class EstimatorTests(unittest.TestCase):
         before = (estimator.altitude_m, estimator.velocity_m_s, estimator.covariance)
         result = estimator.update_altitude(100, 1, innovation_limit=9)
         self.assertFalse(result['accepted'])
+        self.assertIsNone(result['altitude_gain'])
         self.assertEqual((estimator.altitude_m, estimator.velocity_m_s, estimator.covariance), before)
 
     def test_invalid_inputs_do_not_modify_state(self):

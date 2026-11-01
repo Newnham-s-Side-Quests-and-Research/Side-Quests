@@ -2,7 +2,7 @@
 
 ## Account of the earlier build
 
-Lewis recalls a five inch racing frame, a four cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth and PID control. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The details of their implementation and measured performance are not available. This is an account from the builder. It is not a recovered schematic, firmware image or flight log.
+Lewis recalls a five inch racing frame, a three cell lithium polymer battery, a custom power distribution board, a Raspberry Pi 3 and an Arduino S3 mini. He recalls pressure and motion sensors, WiFi, Bluetooth and PID control. He also describes autonomous adjustment, computer vision, path planning, geolocation and a telemetry screen. The details of their implementation and measured performance are not available. Lewis initially described a four cell pack and later corrected this to a three cell pack. The reconstruction uses the corrected three cell account. This remains an account from the builder. It is not a recovered schematic, firmware image or flight log.
 
 ## Material not available
 

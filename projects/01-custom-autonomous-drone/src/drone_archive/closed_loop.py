@@ -67,6 +67,8 @@ def simulate_closed_loop(config):
             has_observation = has_observation or accepted
             imu_missing = _active(imu_outage, step)
             state = 'tracking' if has_observation and stale <= max_stale and not imu_missing else 'degraded'
+            integral_before = integral
+            error = proposed = desired = None
             if state == 'tracking':
                 error = target - estimator.altitude_m
                 proposed = integral + error * dt
@@ -86,7 +88,9 @@ def simulate_closed_loop(config):
                           'estimate': {'altitude_m': estimator.altitude_m, 'velocity_m_s': estimator.velocity_m_s,
                                        'covariance': estimator.covariance, 'unobserved_steps': stale},
                           'updates': {'pressure': pressure_update, 'gps': gps_update},
-                          'control': {'state': state, 'thrust_n': thrust, 'integral_error_m_s': integral}})
+                          'control': {'state': state, 'thrust_n': thrust, 'integral_error_m_s': integral,
+                                      'error_m': error, 'integral_before_m_s': integral_before,
+                                      'proposed_integral_m_s': proposed, 'unclamped_thrust_n': desired}})
             if imu_acceleration is None:
                 # Zero mean acceleration is an explicit degraded model assumption.
                 estimator.predict(0.0, dt, process_variance * 100.0)

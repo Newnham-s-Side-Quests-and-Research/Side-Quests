@@ -32,6 +32,17 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 return self.respond(500, 'text/plain; charset=utf-8', b'Asset unavailable')
         return self.respond(404, 'text/plain; charset=utf-8', b'Not found')
 
+    def do_POST(self):
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+        except ValueError:
+            return self.respond(400, 'text/plain; charset=utf-8', b'Invalid content length')
+        if length < 0 or length > 65536:
+            return self.respond(413, 'text/plain; charset=utf-8', b'Request too large')
+        if length:
+            self.rfile.read(length)
+        return self.respond(405, 'text/plain; charset=utf-8', b'Method not allowed')
+
     def respond(self, status, content_type, body):
         self.send_response(status)
         self.send_header('Content-Type', content_type)

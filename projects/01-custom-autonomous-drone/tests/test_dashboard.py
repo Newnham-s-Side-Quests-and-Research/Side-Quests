@@ -33,6 +33,8 @@ class DashboardTests(unittest.TestCase):
         with urlopen(self.url + '/api/scenarios', timeout=3) as response:
             scenarios = json.load(response)
             self.assertEqual(len(scenarios), 4)
+            self.assertEqual(scenarios[0]['battery_example']['cells_in_series'], 3)
+            self.assertAlmostEqual(scenarios[0]['battery_example']['full_charge_voltage_v'], 12.6)
             self.assertEqual(scenarios[1]['metrics']['pressure_missing'], 30)
             self.assertEqual(scenarios[1]['metrics']['gps_missing_on_schedule'], 6)
         with urlopen(self.url + '/api/trace', timeout=3) as response:
@@ -48,6 +50,6 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(missing.exception.code, 404)
         with self.assertRaises(HTTPError) as method:
             urlopen(Request(self.url + '/api/trace', method='POST', data=b'{}'), timeout=3)
-        self.assertEqual(method.exception.code, 501)
+        self.assertEqual(method.exception.code, 405)
 
 if __name__ == '__main__': unittest.main()

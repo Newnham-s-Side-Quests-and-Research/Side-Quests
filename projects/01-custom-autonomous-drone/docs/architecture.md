@@ -22,7 +22,7 @@ A seeded synthetic altitude signal supports noise, bias and missing samples. The
 
 Fault windows include the start step and exclude the end step. A noise sample is drawn at every step, including a missing sample, so the random sequence stays aligned when comparing a run with and without an outage.
 
-The pressure, IMU and link signals are synthetic observables. The controller uses the altitude signal and ideal simulated velocity. It does not use the pressure or IMU outputs as a flight controller would. The model does not include a four cell battery, motor response, frame geometry, attitude, wind, ground contact or flight dynamics in three dimensions.
+The pressure, IMU and link signals are synthetic observables. The controller uses the altitude signal and ideal simulated velocity. It does not use the pressure or IMU outputs as a flight controller would. The flight model does not include battery effects, motor response, frame geometry, attitude, wind, ground contact or flight dynamics in three dimensions. The dashboard has a separate three cell electrical example that is not connected to the flight model.
 
 ## Decisions still open
 

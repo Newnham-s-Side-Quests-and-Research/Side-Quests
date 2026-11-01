@@ -53,6 +53,11 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(scenarios[3]['metrics']['pressure_rejected'],30)
         for scenario in scenarios:
             self.assertEqual(scenario['metrics']['sample_count'],len(scenario['report']['trace']))
+            self.assertEqual(scenario['battery_example']['cells_in_series'], 3)
+            self.assertEqual(len(scenario['battery_example']['trace']), len(scenario['report']['trace']))
+            for row, battery in zip(scenario['report']['trace'], scenario['battery_example']['trace']):
+                self.assertEqual(row['step'], battery['step'])
+                self.assertAlmostEqual(battery['charge_used_mah'], 8 * row['time_s'] * 1000 / 3600)
             self.assertIn('No original aircraft behaviour or physical flight safety is verified',scenario['report']['limitations'])
 
     def test_dashboard_limits_are_explicit(self):

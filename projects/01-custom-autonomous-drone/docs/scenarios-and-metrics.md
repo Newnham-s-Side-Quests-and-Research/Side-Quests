@@ -22,3 +22,11 @@ Each downloaded report includes the scenario description, effective configuratio
 ## Boundaries
 
 The model has no ground contact, aircraft attitude, motors, battery, camera or real geographic coordinates. During a degraded state it uses zero thrust as a test convention. That convention is not a safe flight procedure. The dashboard is a local read only tool with no login, real radio connection or hardware control.
+
+## Three cell power example
+
+Each scenario includes the same separate electrical example. It assumes three standard LiPo cells in series, 1500 mAh of starting capacity, a fixed nominal voltage of 11.1 V and a fixed current of 8 A. These are illustrative inputs. They are not measurements of the original battery or motor current.
+
+Power equals voltage multiplied by current. Charge used equals current multiplied by elapsed seconds and by 1000, then divided by 3600. Energy used equals power multiplied by elapsed seconds, then divided by 3600. The displayed remaining charge starts from the assumed capacity and is limited to zero. The fixed nominal voltage does not indicate actual charge level.
+
+This calculation does not change the flight model. It does not represent motor loads, cell imbalance, voltage sag, temperature or protection. The full charge reference is 12.6 V for three standard cells at 4.2 V each. The actual pack and its safe operating limits require manufacturer data and physical review.

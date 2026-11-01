@@ -36,6 +36,24 @@ class ClosedLoopTests(unittest.TestCase):
         self.assertAlmostEqual(row['control']['thrust_n'], expected)
         self.assertNotEqual(row['estimate']['altitude_m'], row['truth']['altitude_m'])
 
+    def test_recorded_controller_terms_reconstruct_the_command(self):
+        trace = simulate_closed_loop(self.config)['trace']
+        for row in trace:
+            control = row['control']; estimate = row['estimate']
+            if control['state'] != 'tracking':
+                continue
+            error = self.config['target_altitude_m'] - estimate['altitude_m']
+            proposed = control['integral_before_m_s'] + error * self.config['dt_seconds']
+            raw = (self.config['mass_kg'] * self.config['gravity_m_s2'] + self.config['kp_n_per_m'] * error
+                   + self.config['ki_n_per_m_second'] * proposed - self.config['kd_n_per_m_s'] * estimate['velocity_m_s'])
+            self.assertAlmostEqual(control['error_m'], error)
+            self.assertAlmostEqual(control['proposed_integral_m_s'], proposed)
+            self.assertAlmostEqual(control['unclamped_thrust_n'], raw)
+            self.assertAlmostEqual(control['thrust_n'], max(0, min(self.config['max_thrust_n'], raw)))
+            update = row['updates']['pressure']
+            if update is not None:
+                self.assertAlmostEqual(update['normalised_innovation_squared'], update['innovation'] ** 2 / update['innovation_variance'])
+
     def test_missing_observations_enter_degraded_then_recover(self):
         fault = {'start': 10, 'end': 20}
         trace = simulate_closed_loop(dict(self.config, pressure_dropout=fault, gps_dropout=fault))['trace']

@@ -61,8 +61,12 @@ class VerticalFilter:
         nis = innovation * innovation / innovation_variance
         if not math.isfinite(nis):
             raise EstimationError('Nonfinite innovation')
+        details = {'innovation': innovation, 'normalised_innovation_squared': nis,
+                   'innovation_variance': innovation_variance, 'predicted_observation': prediction,
+                   'measurement_derivative': h0, 'prior_altitude_variance': p00,
+                   'observation_variance': r}
         if limit is not None and nis > limit:
-            return {'accepted': False, 'innovation': innovation, 'normalised_innovation_squared': nis}
+            return {**details, 'accepted': False, 'altitude_gain': None, 'velocity_gain': None}
         k0, k1 = p00 * h0 / innovation_variance, p01 * h0 / innovation_variance
         # Joseph form keeps observation noise in the covariance calculation.
         m00, m10 = 1.0 - k0 * h0, -k1 * h0
@@ -70,7 +74,7 @@ class VerticalFilter:
         b = m00 * (m10 * p00 + p01) + k0 * k1 * r
         d = m10 * m10 * p00 + 2.0 * m10 * p01 + p11 + k1 * k1 * r
         self._commit(self.altitude_m + k0 * innovation, self.velocity_m_s + k1 * innovation, a, b, d)
-        return {'accepted': True, 'innovation': innovation, 'normalised_innovation_squared': nis}
+        return {**details, 'accepted': True, 'altitude_gain': k0, 'velocity_gain': k1}
 
     def _commit(self, altitude, velocity, a, b, d):
         if not all(math.isfinite(x) for x in (altitude, velocity, a, b, d)):

@@ -2,6 +2,7 @@
 from copy import deepcopy
 from .closed_loop import simulate_closed_loop
 from .metrics import summarise
+from .battery import power_example
 from .simulation import SimulationError
 
 def build_scenarios(config):
@@ -26,7 +27,9 @@ def build_scenarios(config):
             settings[key] = None
         settings.update(overrides)
         report = simulate_closed_loop(settings)
-        scenarios.append({'id': identity, 'title': title, 'description': description,
+        battery = power_example(voltage_v=11.1, current_a=8.0, capacity_mah=1500.0,
+                                dt_seconds=settings['dt_seconds'], samples=steps)
+        scenarios.append({'id': identity, 'title': title, 'description': description, 'battery_example': battery,
                           'fault_interval': None if identity == 'baseline' else {'start': start, 'end': end},
                           'metrics': summarise(report), 'report': report})
     return scenarios
