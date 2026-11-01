@@ -2,6 +2,8 @@
 
 The current checks run locally with synthetic data. The automated suite runs in the project folder. It can also be run from a clean temporary copy. The dashboard checks use a local loopback connection and require no external network. The suite covers register validation, duplicate records, unknown references, hash changes, missing files, path escapes and rights states.
 
+The latest local review ran 100 automated tests from a clean checkout with the optional C compiler configured. The browser check also ran against that checkout in parallel at widths of 320, 768 and 1440 pixels. The navigation command was run separately with the compiled C controller and recorded all seven waypoint arrivals. The outputs describe the configured synthetic cases. They do not establish physical flight or commercial deployment readiness.
+
 The rigid body tests cover balanced hover, a rotated thrust direction, the first order motor response, rotor moment signs, constant angular rotation and a discrete free fall case. These checks do not establish accuracy for all flight conditions. The illustrative parameter values have not been measured from the original aircraft.
 
 The controlled rigid body checks compare a small set of seeded target tracking runs, exercise loss of one motor command and verify that a singular motor allocation is rejected. The C position calculation has an optional native test suite that checks known values, invalid inputs and agreement with the Python calculation throughout a simulated flight. These checks cover the chosen cases only. The controlled example uses perfect horizontal state and attitude from the model and does not establish real flight performance.
