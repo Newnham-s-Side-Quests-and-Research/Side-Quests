@@ -50,19 +50,27 @@ def simulate(config):
     kd = _number(config, 'kd_n_per_m_s', minimum=0)
     ki = _number(config, 'ki_n_per_m_second', minimum=0)
     noise = _number(config, 'altitude_noise_std_m', minimum=0)
+    gps_noise = _number(config, 'gps_altitude_noise_std_m', minimum=0)
+    gps_interval = config.get('gps_interval_steps')
+    if isinstance(gps_interval, bool) or not isinstance(gps_interval, int) or gps_interval < 1:
+        raise SimulationError('gps_interval_steps must be a positive integer')
     altitude = _number(config, 'initial_altitude_m')
     velocity = _number(config, 'initial_velocity_m_s')
     target = _number(config, 'target_altitude_m')
     bias = _window(config.get('altitude_bias'), 'altitude_bias', steps, bias=True)
     dropout = _window(config.get('altitude_dropout'), 'altitude_dropout', steps)
+    gps_dropout = _window(config.get('gps_dropout'), 'gps_dropout', steps)
     wifi_dropout = _window(config.get('wifi_dropout'), 'wifi_dropout', steps)
     bluetooth_dropout = _window(config.get('bluetooth_dropout'), 'bluetooth_dropout', steps)
     rng = random.Random(seed)
+    gps_rng = random.Random(seed + 1)
     trace = []
     integral = 0.0
     for step in range(steps):
         missing = _active(dropout, step)
         noise_sample = rng.gauss(0, noise)
+        gps_noise_sample = gps_rng.gauss(0, gps_noise)
+        gps_altitude = altitude + gps_noise_sample if step % gps_interval == 0 and not _active(gps_dropout, step) else None
         measured = None if missing else altitude + noise_sample + (bias[2] if _active(bias, step) else 0.0)
         if missing:
             thrust = 0.0
@@ -91,7 +99,7 @@ def simulate(config):
                       'velocity_m_s': velocity, 'altitude_signal_m': measured,
                       'thrust_n': thrust, 'acceleration_m_s2': acceleration, 'state': state,
                       'integral_error_m_s': integral,
-                      'barometer_pressure_pa': pressure, 'imu': imu,
+                      'barometer_pressure_pa': pressure, 'gps_altitude_m': gps_altitude, 'imu': imu,
                       'links': {'wifi_available': not _active(wifi_dropout, step),
                                 'bluetooth_available': not _active(bluetooth_dropout, step)}})
         altitude, velocity = next_altitude, next_velocity
@@ -99,6 +107,7 @@ def simulate(config):
             'final': {'altitude_m': altitude, 'velocity_m_s': velocity},
             'limitations': ['Not the original aircraft or firmware', 'Velocity is an ideal simulated signal',
                             'Pressure and IMU values use idealised equations rather than a device model',
+                            'GPS represents altitude only and is not geographic positioning',
                             'Link states are synthetic and no wireless network is used',
                             'No ground, attitude, motor dynamics or physical validation',
                             'Zero thrust on missing signal is only a test convention']}

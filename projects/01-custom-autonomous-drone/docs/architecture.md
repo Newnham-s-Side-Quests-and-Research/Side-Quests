@@ -27,3 +27,19 @@ The pressure, IMU and link signals are synthetic observables. The controller use
 ## Decisions still open
 
 The exact microcontroller and sensor models, wiring, calibration, sampling rates, original controller gains and firmware interfaces are unknown. The reported name Arduino S3 mini needs clarification before selecting a specific board. A real reconstruction needs its own requirements and engineering review. The example gains and sensor assumptions are not a basis for physical flight.
+
+## Vertical estimation
+
+A separate two state extended Kalman filter estimates altitude and vertical velocity. Its prediction uses a specified acceleration variance. Its pressure observation uses the derivative of the exponential pressure model. A scalar altitude observation represents a simplified GPS reading. The covariance update uses Joseph form and a configurable innovation limit can reject an outlier.
+
+The replay uses simulated pressure, altitude observations and ideal simulated acceleration. The GPS signal contains altitude only. The estimator does not feed the controller. These conditions make the replay useful for checking the equations but they do not represent a full sensor fusion system.
+
+## Planning and telemetry
+
+The planner uses A star on a bounded two dimensional grid with four possible movements. It returns a shortest route or no route. It has no representation of aircraft motion or real coordinates. The telemetry mapper converts synthetic samples to read only snapshots. Motor, battery and geographic position states remain explicitly unmodelled. It opens no network connection.
+
+## Synthetic vision and integration
+
+A separate image module finds connected regions above a brightness threshold in a synthetic grayscale grid. It reports area, bounding coordinates and centroid. It rejects malformed images and does not claim to recognise objects in a real camera feed.
+
+The integration demonstration runs the synthetic signal model, vertical estimator, grid planner, image detector and telemetry mapper from recorded fixture configurations. It stores the input fixtures, estimator settings and output traces. The modules are demonstrated together but are not connected in a closed flight control loop.

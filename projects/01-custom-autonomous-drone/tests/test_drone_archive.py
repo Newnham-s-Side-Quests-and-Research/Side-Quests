@@ -71,7 +71,7 @@ class SignalTests(unittest.TestCase):
     def test_known_single_step_dynamics(self):
         cfg = dict(self.config, steps=1, initial_altitude_m=1.0, initial_velocity_m_s=2.0,
                    target_altitude_m=1.0, kp_n_per_m=0, kd_n_per_m_s=0, drag_n_per_m_s=0,
-                   altitude_noise_std_m=0, altitude_bias=None, altitude_dropout=None, wifi_dropout=None, bluetooth_dropout=None)
+                   altitude_noise_std_m=0, altitude_bias=None, altitude_dropout=None, wifi_dropout=None, bluetooth_dropout=None, gps_dropout=None)
         result = simulate(cfg)
         self.assertAlmostEqual(result['trace'][0]['thrust_n'], 9.81)
         self.assertAlmostEqual(result['final']['altitude_m'], 1.2)
@@ -103,7 +103,7 @@ class SignalTests(unittest.TestCase):
 
     def test_saturation_and_free_fall_are_explicit(self):
         cfg = dict(self.config, steps=1, altitude_noise_std_m=0, altitude_bias=None,
-                   altitude_dropout={'start': 0, 'end': 1}, initial_velocity_m_s=0, wifi_dropout=None, bluetooth_dropout=None)
+                   altitude_dropout={'start': 0, 'end': 1}, initial_velocity_m_s=0, wifi_dropout=None, bluetooth_dropout=None, gps_dropout=None)
         result = simulate(cfg)
         self.assertAlmostEqual(result['trace'][0]['acceleration_m_s2'], -9.81)
         self.assertAlmostEqual(result['final']['velocity_m_s'], -0.981)
@@ -113,7 +113,7 @@ class SignalTests(unittest.TestCase):
     def test_integral_is_held_during_saturation_and_signal_loss(self):
         cfg = dict(self.config, steps=3, target_altitude_m=1000, altitude_noise_std_m=0,
                    altitude_bias=None, altitude_dropout={'start': 1, 'end': 2},
-                   wifi_dropout=None, bluetooth_dropout=None)
+                   wifi_dropout=None, bluetooth_dropout=None, gps_dropout=None)
         trace = simulate(cfg)['trace']
         self.assertTrue(all(row['integral_error_m_s'] == 0 for row in trace))
         self.assertEqual(trace[0]['thrust_n'], cfg['max_thrust_n'])
@@ -134,6 +134,11 @@ class SignalTests(unittest.TestCase):
         self.assertTrue(all(r['barometer_pressure_pa'] > 0 for r in trace))
         self.assertTrue(all(r['imu']['angular_rate_z_rad_s'] == 0 for r in trace))
 
+    def test_gps_samples_and_outages(self):
+        trace = simulate(self.config)['trace']
+        observed = [r['step'] for r in trace if r['gps_altitude_m'] is not None]
+        self.assertEqual(observed, [0, 5, 10, 15, 30, 35, 40, 45])
+
     def test_link_outages_do_not_change_the_physics(self):
         baseline = simulate(dict(self.config, wifi_dropout=None, bluetooth_dropout=None))['trace']
         faulty = simulate(self.config)['trace']
@@ -148,7 +153,7 @@ class SignalTests(unittest.TestCase):
 
     def test_bad_configuration_is_rejected(self):
         for name, value in [('mass_kg', 0), ('dt_seconds', -1), ('steps', 0), ('seed', True),
-                            ('max_thrust_n', -1), ('ki_n_per_m_second', -1), ('altitude_noise_std_m', float('nan')),
+                            ('max_thrust_n', -1), ('gps_interval_steps', 0), ('gps_altitude_noise_std_m', -1), ('ki_n_per_m_second', -1), ('altitude_noise_std_m', float('nan')),
                             ('altitude_dropout', {'start': 5, 'end': 4})]:
             with self.subTest(name=name), self.assertRaises(SimulationError): simulate(dict(self.config, **{name: value}))
 
