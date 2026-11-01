@@ -22,13 +22,13 @@ This is a design for a new reconstruction. It is not a statement that the origin
 
 The vertical simulation uses a simple one dimensional model with a bounded PID style controller. It generates idealised pressure and motion readings, noisy altitude and an altitude only position signal. It does not model attitude, geographic coordinates, a camera, motors, battery behaviour or three dimensional flight.
 
-The vertical estimator uses a two state extended Kalman filter. Its state is altitude and vertical velocity. The process uses synthetic acceleration. The filter can update from nonlinear pressure and a synthetic altitude observation. It records covariance and can reject an observation using a configured innovation threshold. It is not a full flight estimator and it does not control the simulated aircraft.
+The vertical estimator uses a two state extended Kalman filter. Its state is altitude and vertical velocity. The process uses synthetic acceleration. The filter can update from nonlinear pressure and a synthetic altitude observation. It records covariance and can reject an observation using a configured innovation threshold. A separate closed loop vertical simulation now feeds the estimated altitude and velocity into a bounded controller. It is not a full flight estimator or a three dimensional flight model.
 
 The planner uses a synthetic two dimensional occupancy grid. It finds a shortest four direction route through clear cells. It does not create a flyable trajectory and it has no obstacle perception, aircraft dynamics or geographic coordinates.
 
 A simple detector finds bright connected regions in synthetic grayscale images. It is not a trained model and it has not been evaluated on camera images.
 
-Telemetry snapshots expose the simulated readings and link availability flags. They mark the four motor positions, battery and geographic position as not modelled. There is no telemetry screen, live wireless connection or command interface yet.
+Telemetry snapshots expose the simulated readings and link availability flags. They mark the four motor positions, battery and geographic position as not modelled. A local read only screen can replay the closed loop simulation. There is no login, live wireless connection or command interface yet.
 
 ## Later engineering stages
 

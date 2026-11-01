@@ -12,6 +12,8 @@ from .planning import PlanningError, plan_grid
 from .telemetry import TelemetryError, build_snapshot
 from .vision import VisionError, detect_regions
 from .mission import run_demonstration
+from .closed_loop import simulate_closed_loop
+from .dashboard import LocalDashboard
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -43,9 +45,25 @@ def main(argv=None):
     demo.add_argument('--grid', required=True)
     demo.add_argument('--image', required=True)
     demo.add_argument('--output', required=True)
+    closed = commands.add_parser('closed', help='Run the synthetic closed loop vertical model')
+    closed.add_argument('config')
+    closed.add_argument('--output', required=True)
+    dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
+    dashboard.add_argument('config')
+    dashboard.add_argument('--port', type=int, default=8766)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'hash':
+        if args.command == 'dashboard':
+            if not 0 <= args.port <= 65535:
+                raise ValueError('Port must be between 0 and 65535')
+            config = json.loads(Path(args.config).read_text(encoding='utf-8'))
+            with LocalDashboard(config, args.port) as server:
+                print(f'Synthetic dashboard: http://127.0.0.1:{server.server_port}', flush=True)
+                try:
+                    server.serve_forever()
+                except KeyboardInterrupt:
+                    pass
+        elif args.command == 'hash':
             print(hash_file(args.file))
         elif args.command == 'validate':
             data = json.loads(Path(args.register).read_text(encoding='utf-8'))
@@ -90,6 +108,8 @@ def main(argv=None):
             config = json.loads(Path(args.config).read_text(encoding='utf-8'))
             if args.command == 'estimate':
                 result = estimate_scenario(config)
+            elif args.command == 'closed':
+                result = simulate_closed_loop(config)
             else:
                 result = simulate(config)
                 if args.command == 'telemetry':

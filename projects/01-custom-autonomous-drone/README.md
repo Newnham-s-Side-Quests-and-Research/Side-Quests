@@ -10,7 +10,7 @@ Lewis describes the original aircraft as a five inch racing frame with a four ce
 
 The evidence module records claims and file hashes. It checks references and identifies files whose contents have changed. It also identifies evidence that needs a rights decision. It does not make a publication decision.
 
-The simulation is an isolated vertical motion model. It produces an altitude signal, an idealised pressure signal and idealised motion readings. It also records simulated WiFi and Bluetooth availability. It has a bounded PID style controller and deliberately introduced signal faults. A separate vertical state estimator, grid planner, synthetic image detector and telemetry mapper are included. They do not operate hardware or reproduce the original firmware.
+The simulation includes an isolated vertical motion model. A separate closed loop model connects synthetic pressure, position and motion readings to a vertical state estimator and a bounded PID style controller. Both models support deliberately introduced signal faults. A grid planner, synthetic image detector and telemetry mapper are also included. They do not operate hardware or reproduce the original firmware.
 
 ## Run the checks
 
@@ -37,6 +37,21 @@ python -m drone_archive demo --scenario fixtures/signal-scenario.json --grid fix
 ```
 
 The report includes the simulated signals, vertical estimate, grid route, image regions and telemetry snapshots. These components do not yet operate as a closed flight control system. The image detector uses synthetic grayscale pixels rather than a camera. The position signal is altitude only. No wireless connection is opened.
+
+## Open the local telemetry demonstration
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m drone_archive dashboard fixtures/closed-loop-scenario.json
+```
+
+Open the local address printed by the command. The screen replays synthetic data and cannot control an aircraft. It is bound to the local machine and has no login or remote access service.
+
+To write the closed loop trace instead:
+
+```powershell
+python -m drone_archive closed fixtures/closed-loop-scenario.json --output results/closed-loop.json
+```
 
 ## Read before using the model
 

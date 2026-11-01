@@ -32,7 +32,7 @@ The exact microcontroller and sensor models, wiring, calibration, sampling rates
 
 A separate two state extended Kalman filter estimates altitude and vertical velocity. Its prediction uses a specified acceleration variance. Its pressure observation uses the derivative of the exponential pressure model. A scalar altitude observation represents a simplified GPS reading. The covariance update uses Joseph form and a configurable innovation limit can reject an outlier.
 
-The replay uses simulated pressure, altitude observations and ideal simulated acceleration. The GPS signal contains altitude only. The estimator does not feed the controller. These conditions make the replay useful for checking the equations but they do not represent a full sensor fusion system.
+The replay uses simulated pressure, altitude observations and ideal simulated acceleration. The GPS signal contains altitude only. In the original replay the estimator does not feed the controller. A separate closed loop simulation uses estimated altitude and velocity as controller inputs. Neither model represents a full sensor fusion system.
 
 ## Planning and telemetry
 
@@ -43,3 +43,11 @@ The planner uses A star on a bounded two dimensional grid with four possible mov
 A separate image module finds connected regions above a brightness threshold in a synthetic grayscale grid. It reports area, bounding coordinates and centroid. It rejects malformed images and does not claim to recognise objects in a real camera feed.
 
 The integration demonstration runs the synthetic signal model, vertical estimator, grid planner, image detector and telemetry mapper from recorded fixture configurations. It stores the input fixtures, estimator settings and output traces. The modules are demonstrated together but are not connected in a closed flight control loop.
+
+## Closed loop and local dashboard
+
+The closed loop model samples synthetic pressure and position readings before each control step. The estimator updates from accepted observations. A PID style controller uses the estimated vertical state. The plant then advances and its synthetic acceleration is used for prediction. Noise comes from independent seeded generators.
+
+Before the first accepted observation the model remains in a degraded state. It also enters that state if observations are unavailable for more than the configured number of steps or the synthetic motion signal is missing. It uses zero thrust as a test convention and holds the integral. The estimator uses a zero mean acceleration assumption with increased process variance while the motion signal is unavailable. These choices are not flight safety procedures.
+
+The dashboard is a local read only view of one generated trace. It binds only to the local machine and does not open a connection to hardware. A component is shown as not modelled when the simulation has no data for it. The view has no authentication or remote service.

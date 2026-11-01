@@ -1,0 +1,42 @@
+"""Serve a read only synthetic dashboard on the local machine."""
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+from pathlib import Path
+from .closed_loop import simulate_closed_loop
+
+ASSETS = Path(__file__).resolve().parents[2] / 'dashboard'
+
+class LocalDashboard(ThreadingHTTPServer):
+    def __init__(self, config, port=0):
+        self.trace = json.dumps(simulate_closed_loop(config), allow_nan=False).encode('utf-8')
+        super().__init__(('127.0.0.1', port), DashboardHandler)
+
+class DashboardHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        routes = {'/': ('index.html', 'text/html; charset=utf-8'),
+                  '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
+                  '/style.css': ('style.css', 'text/css; charset=utf-8')}
+        if self.path == '/api/trace':
+            return self.respond(200, 'application/json; charset=utf-8', self.server.trace)
+        if self.path == '/api/health':
+            return self.respond(200, 'application/json; charset=utf-8', b'{"status":"ok"}')
+        if self.path in routes:
+            name, content_type = routes[self.path]
+            try:
+                return self.respond(200, content_type, (ASSETS / name).read_bytes())
+            except OSError:
+                return self.respond(500, 'text/plain; charset=utf-8', b'Asset unavailable')
+        return self.respond(404, 'text/plain; charset=utf-8', b'Not found')
+
+    def respond(self, status, content_type, body):
+        self.send_response(status)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Content-Security-Policy', "default-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format, *args):
+        pass
