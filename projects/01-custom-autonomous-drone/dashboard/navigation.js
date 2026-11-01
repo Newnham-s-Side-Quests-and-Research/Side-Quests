@@ -21,6 +21,12 @@
     get('navigation-position-text').textContent = row.position_m.map(n => n.toFixed(2)).join(', ') + ' m';
     get('navigation-time').textContent = `${row.time_s.toFixed(2)} s`;
     get('navigation-estimate').textContent = `${row.estimated_altitude_m.toFixed(2)} m`;
+    get('navigation-voltage').textContent = row.power ? `${row.power.loaded_voltage_v.toFixed(2)} V` : 'Unavailable';
+    get('navigation-charge').textContent = row.power ? `${row.power.start_charge_mah.toFixed(1)} mAh` : 'Unavailable';
+    get('navigation-current').textContent = row.power ? `${row.power.current_a.toFixed(2)} A` : 'Unavailable';
+    for (let motor = 0; motor < 4; motor += 1) {
+      get(`navigation-motor-${motor + 1}`).textContent = `${row.motor_thrust_n[motor].toFixed(2)} N`;
+    }
     get('navigation-progress').textContent = `${current.waypoint_events.filter(event => event.time_s <= row.time_s).length} / ${current.route.length - 1}`;
     get('navigation-step').value = index;
     get('navigation-label').textContent = `${index + 1} / ${current.samples.length}`;

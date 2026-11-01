@@ -2,6 +2,7 @@
 import math
 from .point_mass import _finite, _vector
 from .simulation import SimulationError
+from .power_model import PowerModel
 
 
 def _cross(a, b):
@@ -82,6 +83,7 @@ def simulate_rigid_body(config, controller=None, stop_condition=None):
     if position[2] <= 0:
         raise SimulationError('Initial altitude must be above ground')
     outage = _window(config.get('motor_outage'), steps)
+    power = PowerModel(config['power_model']) if config.get('power_model') is not None else None
     alpha = -math.expm1(-dt / tau)
     trace = []
     contact = None
@@ -130,7 +132,7 @@ def simulate_rigid_body(config, controller=None, stop_condition=None):
                       'body_rate_rad_s': omega.copy(), 'motor_thrust_n': thrust.copy(),
                       'motor_command_n': applied_command, 'force_world_n': force,
                       'moment_body_nm': moment, 'acceleration_m_s2': acceleration,
-                      'angular_acceleration_rad_s2': angular_acceleration, 'controller': controller_record})
+                      'angular_acceleration_rad_s2': angular_acceleration, 'controller': controller_record, 'power': None})
         next_position = [position[i] + velocity[i] * dt for i in range(3)]
         next_velocity = [velocity[i] + acceleration[i] * dt for i in range(3)]
         next_omega = [omega[i] + angular_acceleration[i] * dt for i in range(3)]
@@ -140,23 +142,31 @@ def simulate_rigid_body(config, controller=None, stop_condition=None):
             raise SimulationError(f'Nonfinite rigid body state at step {step}')
         if next_position[2] <= 0:
             fraction = position[2] / (position[2] - next_position[2])
+            if power is not None and fraction > 0:
+                trace[-1]['power'] = power.advance(thrust, fraction * dt)
             position = [position[i] + fraction * (next_position[i] - position[i]) for i in range(3)]
             velocity = [velocity[i] + fraction * (next_velocity[i] - velocity[i]) for i in range(3)]
             position[2] = 0.0
             contact = {'type': 'ground_contact', 'time_s': (step + fraction) * dt, 'after_step': step}
             # The terminal attitude and motors are not interpolated.
             break
+        if power is not None:
+            trace[-1]['power'] = power.advance(thrust, dt)
         previous_position = position.copy()
         position, velocity, omega, attitude, thrust = next_position, next_velocity, next_omega, next_attitude, next_thrust
         previous_acceleration = acceleration
     limitations = ['Synthetic parameters are not measured from the original aircraft',
-                   'No battery, propeller aerodynamics or impact dynamics',
+                   'No propeller aerodynamics or impact dynamics',
                    'Motor thrust follows an assumed first order response',
                    'Explicit Euler integration and linear drag approximate the dynamics',
                    'Terminal attitude and motor state are not interpolated at ground contact',
                    'Not suitable for controlling or validating an aircraft']
     if controller is None:
         limitations.insert(1, 'No controller or sensors')
+    if power is None:
+        limitations.insert(1, 'No battery model')
+    else:
+        limitations.insert(1, 'Electrical accounting is illustrative and does not affect thrust or stop the vehicle')
     return {'model': 'synthetic rigid body with prescribed motor commands' if controller is None else 'synthetic rigid body with supplied controller', 'configuration': config,
             'trace': trace, 'final': {'position_m': position, 'velocity_m_s': velocity},
             'terminal_event': contact,

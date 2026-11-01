@@ -31,7 +31,7 @@ class LocalDashboard(ThreadingHTTPServer):
             samples = [{'step': row['step'], 'time_s': row['time_s'], 'position_m': row['position_m'],
                         'target_m': row['controller']['target_position_m'],
                         'estimated_altitude_m': row['controller']['estimated_altitude_m'],
-                        'motor_thrust_n': row['motor_thrust_n']} for row in selected]
+                        'motor_thrust_n': row['motor_thrust_n'], 'power': row['power']} for row in selected]
             examples.append({'id': name, 'wind_m_s': wind, 'status': result['status'],
                              'route': result['route'], 'waypoints_m': result['waypoints_m'],
                              'waypoint_events': result['waypoint_events'], 'samples': samples,

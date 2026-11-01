@@ -69,6 +69,10 @@ async def run(base_url, output):
                 if await page.locator('#mission-state').inner_text() != 'Complete in model':
                     raise AssertionError('Mission completion is not shown')
                 await page.locator('#navigation-scenario:not([disabled])').wait_for()
+                if 'V' not in await page.locator('#navigation-voltage').inner_text():
+                    raise AssertionError('Simulated loaded voltage is missing')
+                if 'N' not in await page.locator('#navigation-motor-1').inner_text():
+                    raise AssertionError('Simulated motor thrust is missing')
                 await page.locator('#navigation-step').fill(await page.locator('#navigation-step').get_attribute('max'))
                 if await page.locator('#navigation-progress').inner_text() != '7 / 7':
                     raise AssertionError('Controlled mission progress is not shown')
@@ -77,7 +81,7 @@ async def run(base_url, output):
                     raise AssertionError('Obstacle contact is not shown')
                 await page.screenshot(path=str(output / f'{name}.png'), full_page=True)
                 await page.get_by_role('link', name='Read the mathematical calculations').click()
-                if await page.locator('math[display="block"]').count() != 7:
+                if await page.locator('math[display="block"]').count() != 8:
                     raise AssertionError('Numbered mathematical equations are missing')
                 if not await page.evaluate('document.documentElement.scrollWidth <= innerWidth'):
                     raise AssertionError('Calculation page overflows the viewport')

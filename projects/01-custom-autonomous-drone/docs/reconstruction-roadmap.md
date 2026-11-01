@@ -36,6 +36,8 @@ A separate point mass example calculates position and velocity in three axes fro
 
 A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. A separate controlled example connects it to a position controller and a pressure based vertical filter. The position controller can use Python or a compiled C calculation. A static voxel route can supply waypoint targets to that controller. The resulting point path is checked against blocked cells and grid bounds. Horizontal position and velocity and full attitude come directly from the model. The model has not been validated against an independent flight simulator or physical aircraft.
 
+An optional three cell electrical model estimates current from the simulated motor thrust and tracks charge and voltage sag using assumed parameters. It does not supply power to the flight model, change motor thrust or represent battery protection. Its values are not measured pack data.
+
 ## Later engineering stages
 
 ### Three dimensional simulation

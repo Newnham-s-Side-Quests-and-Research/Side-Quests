@@ -22,6 +22,8 @@ A controlled rigid body example connects a position controller and a vertical pr
 
 A synthetic navigation example connects the voxel planner to the controlled model. It follows waypoint targets and checks the point model against static blocked cells and a bounded grid. The local dashboard can replay still air and wind scenarios. The point check does not represent the full aircraft footprint or prove a safe path.
 
+The controlled example can also record an assumed three cell power model. It estimates current from simulated thrust, tracks charge and estimates voltage sag. These are illustrative electrical calculations. They do not limit motor thrust and they are not measurements of the original battery.
+
 ## Run the checks
 
 From this folder run:

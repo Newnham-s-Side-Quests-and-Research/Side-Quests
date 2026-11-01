@@ -140,7 +140,18 @@
         0,
         0
       ],
-      "motor_outage": null
+      "motor_outage": null,
+      "power_model": {
+        "schema_version": 1,
+        "cells_in_series": 3,
+        "capacity_mah": 1500,
+        "initial_charge_fraction": 1.0,
+        "full_cell_voltage_v": 4.2,
+        "empty_cell_voltage_v": 3.3,
+        "pack_resistance_ohm": 0.06,
+        "idle_current_a": 0.5,
+        "current_per_thrust_a_per_n": 2.0
+      }
     },
     "controller": {
       "target_position_m": [

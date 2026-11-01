@@ -8,6 +8,8 @@ The controlled rigid body checks compare a small set of seeded target tracking r
 
 The connected navigation checks exercise a route around static blocked cells, an assumed wind that drives the point model into a blocked cell, a grid exit and a map with no route. A segment and box check covers movement between simulation samples. The final segment is not separately checked against blocked cells if the flight model ends at ground contact. Waypoint arrival uses ideal simulated position and velocity. These checks do not include a vehicle footprint, map uncertainty or dynamic collision avoidance. The dashboard displays a sampled replay and the command line output retains the full trace. The final replay sample occurs before a detected stop.
 
+The illustrative power checks cover a known load, voltage sag, zero current, voltage collapse, exhausted charge and a partial integration step at ground contact. The model does not use a measured discharge curve or stop thrust when charge is exhausted. It cannot establish battery runtime or safe operating limits.
+
 The signal tests cover a hand calculated motion step, repeatability with a fixed seed, altitude bias, missing altitude samples, output bounds and invalid configuration. They also check a free fall example, integral holding, ideal pressure conversion, ideal motion readings and simulated link outages.
 
 The vertical estimator is checked against hand calculated prediction and observation updates. Its pressure derivative is compared with a numerical approximation. The tests cover rejected outliers, invalid inputs, covariance checks and a deterministic synthetic replay with missing position samples.

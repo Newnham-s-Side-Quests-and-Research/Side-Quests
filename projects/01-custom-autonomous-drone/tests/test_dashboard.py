@@ -39,6 +39,7 @@ class DashboardTests(unittest.TestCase):
             examples = json.load(response)
             self.assertEqual([example['status'] for example in examples], ['complete', 'obstacle_contact'])
             self.assertTrue(all(example['samples'] for example in examples))
+            self.assertEqual(examples[0]['samples'][0]['power']['start_charge_mah'], 1500)
         with urlopen(self.url + '/api/scenarios', timeout=3) as response:
             scenarios = json.load(response)
             self.assertEqual(len(scenarios), 6)
