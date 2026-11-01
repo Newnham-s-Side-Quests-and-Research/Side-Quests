@@ -81,7 +81,8 @@ function stop() {
 }
 
 function drawChart() {
-  let low = Infinity; let high = -Infinity;
+  let low = current.report.configuration.target_altitude_m;
+  let high = low;
   for (const row of trace) {
     low = Math.min(low, row.truth.altitude_m, row.estimate.altitude_m);
     high = Math.max(high, row.truth.altitude_m, row.estimate.altitude_m);
@@ -94,11 +95,14 @@ function drawChart() {
   }).join(' ');
   find('truth-line').setAttribute('points', points('truth'));
   find('estimate-line').setAttribute('points', points('estimate'));
+  const targetY = 220 - (current.report.configuration.target_altitude_m - low) * 200 / spread;
+  find('target-line').setAttribute('y1', targetY.toFixed(2));
+  find('target-line').setAttribute('y2', targetY.toFixed(2));
   find('chart-min').textContent = `${low.toFixed(2)} m`;
   find('chart-max').textContent = `${high.toFixed(2)} m`;
   const fault = current.fault_interval;
   const factor = trace.length > 1 ? 800 / (trace.length - 1) : 0;
-  const x = fault ? fault.start * factor : 0;
+  const x = fault ? Math.min(800, fault.start * factor) : 0;
   const end = fault ? Math.min(800, fault.end * factor) : 0;
   find('fault-region').setAttribute('x', x.toFixed(2));
   find('fault-region').setAttribute('width', Math.max(0, end - x).toFixed(2));
@@ -111,7 +115,9 @@ function showScenario(id) {
   trace = current.report.trace;
   position = 0;
   find('scenario-description').textContent = current.description;
-  find('fault-window').textContent = current.fault_interval ? `Fault applied from sample ${current.fault_interval.start + 1} to ${current.fault_interval.end}.` : 'No fault is injected in this scenario.';
+  find('fault-window').textContent = current.fault_interval ? `Fault scheduled from sample ${current.fault_interval.start + 1} to ${current.fault_interval.end}.` : 'No fault is injected in this scenario.';
+  const contact = current.report.terminal_event;
+  find('scenario-outcome').textContent = contact ? `The model stopped at ground contact after ${contact.time_s.toFixed(2)} seconds. The fault interval may be cut short.` : 'The model completed the configured samples without ground contact.';
   const metric = current.metrics;
   find('tracking-rms').textContent = format(metric.tracking_rmse_m, 'm');
   find('estimation-rms').textContent = format(metric.estimation_rmse_m, 'm');

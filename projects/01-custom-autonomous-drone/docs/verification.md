@@ -1,6 +1,6 @@
 # Verification record
 
-The current checks run locally with synthetic data. The latest suite contains 66 tests. All passed in the project folder and in a clean temporary copy. The dashboard checks use a local loopback connection and require no external network. The suite covers register validation, duplicate records, unknown references, hash changes, missing files, path escapes and rights states.
+The current checks run locally with synthetic data. The automated suite runs in the project folder. It can also be run from a clean temporary copy. The dashboard checks use a local loopback connection and require no external network. The suite covers register validation, duplicate records, unknown references, hash changes, missing files, path escapes and rights states.
 
 The signal tests cover a hand calculated motion step, repeatability with a fixed seed, altitude bias, missing altitude samples, output bounds and invalid configuration. They also check a free fall example, integral holding, ideal pressure conversion, ideal motion readings and simulated link outages.
 

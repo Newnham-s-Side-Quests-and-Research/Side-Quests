@@ -35,7 +35,7 @@ def simulate_closed_loop(config):
     imu_noise = _number(config, 'imu_noise_std_m_s2', minimum=0)
     process_variance = _number(config, 'acceleration_variance_m2_s4', strictly_positive=True)
     gate = _number(config, 'innovation_limit', strictly_positive=True)
-    altitude = _number(config, 'initial_altitude_m')
+    altitude = _number(config, 'initial_altitude_m', strictly_positive=True)
     velocity = _number(config, 'initial_velocity_m_s')
     target = _number(config, 'target_altitude_m')
     estimator = VerticalFilter(_number(config, 'estimate_altitude_m'), _number(config, 'estimate_velocity_m_s'),
@@ -51,6 +51,7 @@ def simulate_closed_loop(config):
     has_observation = False
     integral = 0.0
     trace = []
+    terminal_event = None
     for step in range(steps):
         p_noise, g_noise, i_noise = prng.gauss(0, pressure_noise), grng.gauss(0, gps_noise), irng.gauss(0, imu_noise)
         try:
@@ -96,13 +97,22 @@ def simulate_closed_loop(config):
                 estimator.predict(0.0, dt, process_variance * 100.0)
             else:
                 estimator.predict(imu_acceleration, dt, process_variance)
-            altitude, velocity = altitude + velocity * dt, velocity + acceleration * dt
-            if not all(math.isfinite(x) for x in (altitude, velocity)):
+            next_altitude, next_velocity = altitude + velocity * dt, velocity + acceleration * dt
+            if not all(math.isfinite(x) for x in (next_altitude, next_velocity)):
                 raise SimulationError(f'Nonfinite simulated state at step {step}')
+            if next_altitude <= 0:
+                fraction = altitude / (altitude - next_altitude)
+                velocity += fraction * (next_velocity - velocity)
+                altitude = 0.0
+                terminal_event = {'type': 'ground_contact', 'time_s': (step + fraction) * dt,
+                                  'velocity_m_s': velocity, 'after_step': step}
+                break
+            altitude, velocity = next_altitude, next_velocity
         except (ValueError, EstimationError) as exc:
             raise SimulationError(f'Invalid signal or estimate at step {step}: {exc}') from exc
     return {'model': 'synthetic closed loop vertical simulation', 'configuration': config, 'trace': trace,
-            'final': {'altitude_m': altitude, 'velocity_m_s': velocity},
+            'final': {'altitude_m': altitude, 'velocity_m_s': velocity}, 'terminal_event': terminal_event,
             'limitations': ['One dimensional synthetic model only', 'No attitude, motors, camera or real GPS coordinates',
+                            'Ground contact stops the model at a flat surface without impact dynamics',
                             'Zero thrust during stale observations is only a simulation convention',
                             'No original aircraft behaviour or physical flight safety is verified']}

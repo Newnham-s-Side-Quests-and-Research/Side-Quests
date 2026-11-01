@@ -26,7 +26,7 @@ The remaining value assumes the stated starting capacity and ideal counting. It 
 
 ## Flight model
 
-The vertical model calculates acceleration from thrust, mass, gravity and linear drag. It uses explicit Euler steps for altitude and velocity. This is a simplified model, not a measured aerodynamic model. There is no ground collision, propeller response or battery coupling.
+The vertical model calculates acceleration from thrust, mass, gravity and linear drag. It uses explicit Euler steps for altitude and velocity. This is a simplified model, not a measured aerodynamic model. The model stops at a flat ground surface using interpolation within the final step. It does not model impact, propeller response or battery coupling.
 
 The controller calculates an altitude error from the target and estimated altitude. It proposes an updated integral from the prior integral plus error multiplied by timestep. The unbounded thrust is the sum of gravity compensation, proportional correction and integral correction, less a velocity correction. The command is limited to the configured thrust range. The integral is held when saturation and the error would push the command farther beyond a limit.
 

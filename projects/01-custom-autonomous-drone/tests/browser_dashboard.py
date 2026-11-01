@@ -47,8 +47,10 @@ async def run(base_url, output):
                 await page.locator('#step').fill('105')
                 if 'not a flight safety procedure' not in (await page.locator('#formula-clamp').inner_text()).lower():
                     raise AssertionError('Degraded state is not explained')
-                if await page.locator('#step-label').inner_text() != '106 / 300':
+                if await page.locator('#step-label').inner_text() != '106 / 119':
                     raise AssertionError('Playback position did not update')
+                if 'ground contact' not in (await page.locator('#scenario-outcome').inner_text()).lower():
+                    raise AssertionError('Ground contact is not shown')
                 if not await page.evaluate('document.documentElement.scrollWidth <= innerWidth'):
                     raise AssertionError('Page overflows the viewport')
                 async with page.expect_download() as info:

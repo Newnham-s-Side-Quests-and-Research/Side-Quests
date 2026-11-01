@@ -37,10 +37,10 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('No attitude, motor, wind, battery or three dimensional flight dynamics', mission['limitations'])
         with urlopen(self.url + '/api/scenarios', timeout=3) as response:
             scenarios = json.load(response)
-            self.assertEqual(len(scenarios), 4)
+            self.assertEqual(len(scenarios), 6)
             self.assertEqual(scenarios[0]['battery_example']['cells_in_series'], 3)
             self.assertAlmostEqual(scenarios[0]['battery_example']['full_charge_voltage_v'], 12.6)
-            self.assertEqual(scenarios[1]['metrics']['pressure_missing'], 30)
+            self.assertEqual(scenarios[2]['metrics']['pressure_missing'], 30)
             self.assertEqual(scenarios[1]['metrics']['gps_missing_on_schedule'], 6)
         with urlopen(self.url + '/api/trace', timeout=3) as response:
             report = json.load(response)

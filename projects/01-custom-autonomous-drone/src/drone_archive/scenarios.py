@@ -13,6 +13,10 @@ def build_scenarios(config):
     end = min(steps, start + max(2, steps // 10))
     specs = [
         ('baseline', 'Normal signals', 'Run with the configured synthetic sensor noise.', {}),
+        ('gps_outage', 'GPS altitude unavailable', 'Test whether pressure readings maintain the vertical estimate when GPS altitude is unavailable.',
+         {'gps_dropout': {'start': start, 'end': end}}),
+        ('pressure_outage', 'Pressure reading unavailable', 'Test whether scheduled GPS altitude readings maintain the vertical estimate when pressure is unavailable.',
+         {'pressure_dropout': {'start': start, 'end': end}}),
         ('position_outage', 'Position observations lost', 'Pressure and GPS altitude readings are unavailable during the marked interval.',
          {'pressure_dropout': {'start': start, 'end': end}, 'gps_dropout': {'start': start, 'end': end}}),
         ('imu_outage', 'Motion signal lost', 'The synthetic motion signal is unavailable during the marked interval.',
@@ -28,7 +32,7 @@ def build_scenarios(config):
         settings.update(overrides)
         report = simulate_closed_loop(settings)
         battery = power_example(voltage_v=11.1, current_a=8.0, capacity_mah=1500.0,
-                                dt_seconds=settings['dt_seconds'], samples=steps)
+                                dt_seconds=settings['dt_seconds'], samples=len(report['trace']))
         scenarios.append({'id': identity, 'title': title, 'description': description, 'battery_example': battery,
                           'fault_interval': None if identity == 'baseline' else {'start': start, 'end': end},
                           'metrics': summarise(report), 'report': report})

@@ -6,3 +6,5 @@
 .mission-card svg{height:270px}.chart-legend .mission-current{background:#254a32}#mission-obstacles circle{fill:#c9937c;stroke:#9d6856;stroke-width:1;vector-effect:non-scaling-stroke}#mission-position{fill:#284a34;stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}#mission-goal{fill:#fff;stroke:#284a34;stroke-width:2;vector-effect:non-scaling-stroke}#mission-route{stroke-width:3}@media(max-width:700px){.mission-card svg{height:200px}}
 
 .chart-legend .mission-goal{height:10px;width:10px;border:1px solid #284a34;background:#fff;border-radius:50%}
+
+.chart-legend .target{background:#526d94}.target-line{stroke:#526d94;stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}

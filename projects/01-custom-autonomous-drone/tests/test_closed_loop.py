@@ -65,7 +65,7 @@ class ClosedLoopTests(unittest.TestCase):
 
     def test_no_tracking_before_first_observation(self):
         outage = {'start': 0, 'end': 10}
-        trace = simulate_closed_loop(dict(self.config, pressure_dropout=outage, gps_dropout=outage))['trace']
+        trace = simulate_closed_loop(dict(self.config, initial_altitude_m=3, pressure_dropout=outage, gps_dropout=outage))['trace']
         self.assertTrue(all(row['control']['state'] == 'degraded' for row in trace[:10]))
         self.assertTrue(all(row['control']['thrust_n'] == 0 for row in trace[:10]))
         self.assertTrue(trace[10]['updates']['pressure']['accepted'])
@@ -82,6 +82,23 @@ class ClosedLoopTests(unittest.TestCase):
         self.assertTrue(all(not row['updates']['pressure']['accepted'] for row in trace[30:40]))
         self.assertIsNotNone(trace[30]['updates']['gps'])
         self.assertTrue(trace[30]['updates']['gps']['accepted'])
+
+    def test_ground_contact_stops_the_explicit_euler_model(self):
+        outage = {'start': 0, 'end': 10}
+        config = dict(self.config, steps=10, dt_seconds=0.5, initial_altitude_m=1,
+                      initial_velocity_m_s=0, gravity_m_s2=2, drag_n_per_m_s=0,
+                      pressure_dropout=outage, gps_dropout=outage)
+        report = simulate_closed_loop(config)
+        self.assertEqual([row['truth']['altitude_m'] for row in report['trace']], [1, 1, 0.5])
+        self.assertEqual(report['final']['altitude_m'], 0)
+        self.assertAlmostEqual(report['terminal_event']['time_s'], 1.25)
+        self.assertAlmostEqual(report['terminal_event']['velocity_m_s'], -2.5)
+        self.assertEqual(report['terminal_event']['after_step'], 2)
+
+    def test_airborne_run_has_no_terminal_event(self):
+        report = simulate_closed_loop(self.config)
+        self.assertIsNone(report['terminal_event'])
+        self.assertEqual(len(report['trace']), self.config['steps'])
 
     def test_invalid_configuration_fails(self):
         for key, value in [('mass_kg', 0), ('steps', True), ('gps_interval_steps', 0), ('pressure_noise_std_pa', 0), ('max_unobserved_steps', -1), ('imu_dropout', {'start':5,'end':4})]:
