@@ -23,7 +23,7 @@ def _count(value, name, positive=False):
     return value
 
 
-def match(order, receipts, invoice):
+def match(order, receipts, invoice, previous_invoices):
     _fields(order, ('order_id','supplier_id','product_id','unit','ordered_quantity','currency','unit_price_minor'), 'order')
     for key in ('order_id','supplier_id','product_id','unit'): _id(order[key], key)
     quantity = _count(order['ordered_quantity'], 'ordered quantity', positive=True)
@@ -36,6 +36,8 @@ def match(order, receipts, invoice):
     _count(invoice['unit_price_minor'], 'invoice unit price')
     if not isinstance(receipts, list) or len(receipts) > 100000:
         raise MatchError('Receipts must be a bounded list')
+    if not isinstance(previous_invoices, list) or len(previous_invoices) > 100000:
+        raise MatchError('Previous invoices must be a bounded list')
     seen, accepted, delivered = set(), 0, 0
     for receipt in receipts:
         _fields(receipt, ('receipt_id','order_id','product_id','unit','delivered_quantity','accepted_quantity'), 'receipt')
@@ -52,14 +54,30 @@ def match(order, receipts, invoice):
         return {'status':'unresolved','reason':'no delivery records'}
     if any(invoice[key] != order[key] for key in ('order_id','supplier_id','product_id','unit','currency','unit_price_minor')):
         return {'status':'unresolved','reason':'invoice does not match order terms'}
-    if delivered > quantity or invoiced > quantity:
+    seen_invoices = {invoice['invoice_id']}
+    previous_quantity = 0
+    for previous in previous_invoices:
+        _fields(previous, ('invoice_id','order_id','supplier_id','product_id','unit','quantity','currency','unit_price_minor'), 'previous invoice')
+        previous_id = _id(previous['invoice_id'], 'previous invoice ID')
+        if previous_id in seen_invoices:
+            raise MatchError('Duplicate invoice ID')
+        seen_invoices.add(previous_id)
+        previous_amount = _count(previous['quantity'], 'previous invoice quantity', positive=True)
+        _count(previous['unit_price_minor'], 'previous invoice unit price')
+        if any(previous[key] != order[key] for key in ('order_id','supplier_id','product_id','unit','currency','unit_price_minor')):
+            return {'status':'unresolved','reason':'previous invoice does not match order terms'}
+        previous_quantity += previous_amount
+    if delivered > quantity or invoiced + previous_quantity > quantity:
         return {'status':'unresolved','reason':'quantity exceeds the order'}
-    excess = max(0, invoiced - accepted)
+    if previous_quantity > accepted:
+        return {'status':'unresolved','reason':'previous invoices exceed accepted quantity'}
+    available = accepted - previous_quantity
+    excess = max(0, invoiced - available)
     return {'status':'matched' if excess == 0 else 'review', 'order_id':order['order_id'],
             'invoice_id':invoice['invoice_id'], 'receipt_ids':sorted(seen),
-            'accepted_quantity':accepted, 'invoiced_quantity':invoiced,
+            'accepted_quantity':accepted, 'previously_invoiced_quantity':previous_quantity,
+            'available_quantity':available, 'invoiced_quantity':invoiced,
             'proposed_credit_quantity':excess, 'proposed_credit_minor':excess * unit_price,
             'currency':order['currency'],
-            'limitations':['The proposal depends on supplied order and receipt records',
-                            'Previous invoices are not tracked and must be reviewed separately',
+            'limitations':['The proposal depends on a complete and accurate supplied invoice history',
                             'No supplier contact, credit approval or payment adjustment is performed']}
