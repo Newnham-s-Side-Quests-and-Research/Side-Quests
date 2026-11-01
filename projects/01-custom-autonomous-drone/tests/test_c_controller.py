@@ -1,5 +1,5 @@
+from test_inputs import input_path
 import json
-import math
 import os
 from pathlib import Path
 import subprocess
@@ -52,7 +52,7 @@ for target, gain in (([math.nan,0,0],[1]*3), ([0]*3,[-1,1,1])):
         return result.stdout
 
     def test_native_and_python_integrated_flights_agree(self):
-        config = json.loads((ROOT / 'fixtures' / 'controlled-flight-scenario.json').read_text(encoding='utf-8'))
+        config = json.loads((input_path('controlled-flight-scenario.json')).read_text(encoding='utf-8'))
         python_report = run_controlled_flight(config)
         script = '''
 import json, sys
@@ -65,7 +65,7 @@ print(json.dumps(run_controlled_flight(config, position_controller=load_position
         env = os.environ.copy()
         env['PYTHONPATH'] = str(ROOT / 'src')
         result = subprocess.run([sys.executable, '-c', script, str(self.library_path),
-                                 str(ROOT / 'fixtures' / 'controlled-flight-scenario.json')],
+                                 str(input_path('controlled-flight-scenario.json'))],
                                 env=env, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         native_report = json.loads(result.stdout)

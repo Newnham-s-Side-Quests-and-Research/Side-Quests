@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -66,7 +67,7 @@ class EvidenceTests(unittest.TestCase):
 
 class SignalTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'signal-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('signal-scenario.json')).read_text(encoding='utf-8'))
 
     def test_known_single_step_dynamics(self):
         cfg = dict(self.config, steps=1, initial_altitude_m=1.0, initial_velocity_m_s=2.0,
@@ -161,15 +162,15 @@ class SignalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'trace.json'
-            run = subprocess.run([sys.executable, '-m', 'drone_archive', 'simulate', str(ROOT / 'fixtures' / 'signal-scenario.json'), '--output', str(output)], cwd=tmp, env=env, text=True, capture_output=True)
+            run = subprocess.run([sys.executable, '-m', 'drone_archive', 'simulate', str(input_path('signal-scenario.json')), '--output', str(output)], cwd=tmp, env=env, text=True, capture_output=True)
             self.assertEqual(run.returncode, 0, run.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))
             self.assertEqual(len(report['trace']), 50)
             self.assertIn('Not the original aircraft or firmware', report['limitations'])
-            bad = subprocess.run([sys.executable, '-m', 'drone_archive', 'validate', str(ROOT / 'fixtures' / 'empty-register.json')], cwd=tmp, env=env, text=True, capture_output=True)
+            bad = subprocess.run([sys.executable, '-m', 'drone_archive', 'validate', str(input_path('empty-register.json'))], cwd=tmp, env=env, text=True, capture_output=True)
             self.assertEqual(bad.returncode, 0, bad.stderr)
             self.assertIn('Human approval', bad.stdout)
-            empty = subprocess.run([sys.executable, '-m', 'drone_archive', 'verify', str(ROOT / 'fixtures' / 'empty-register.json'), '--root', tmp], cwd=tmp, env=env, text=True, capture_output=True)
+            empty = subprocess.run([sys.executable, '-m', 'drone_archive', 'verify', str(input_path('empty-register.json')), '--root', tmp], cwd=tmp, env=env, text=True, capture_output=True)
             self.assertEqual(empty.returncode, 1)
 
 

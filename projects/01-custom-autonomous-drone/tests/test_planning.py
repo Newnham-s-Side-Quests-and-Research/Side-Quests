@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import sys
 import os
 import json
@@ -36,7 +37,7 @@ class PlanningTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'route.json'
-            scenario = ROOT / 'fixtures' / 'grid-scenario.json'
+            scenario = input_path('grid-scenario.json')
             result = subprocess.run([sys.executable, '-m', 'drone_archive', 'plan', str(scenario), '--output', str(output)], cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(len(json.loads(output.read_text(encoding='utf-8'))['route']) - 1, 12)

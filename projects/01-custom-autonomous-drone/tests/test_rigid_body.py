@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -16,7 +17,7 @@ from drone_archive.simulation import SimulationError
 
 class RigidBodyTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'rigid-body-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('rigid-body-scenario.json')).read_text(encoding='utf-8'))
 
     def test_balanced_hover_and_input_immutability(self):
         before = copy.deepcopy(self.config)
@@ -84,7 +85,7 @@ class RigidBodyTests(unittest.TestCase):
             env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'report.json'
             result = subprocess.run([sys.executable, '-m', 'drone_archive', 'rigid-body',
-                                     str(ROOT / 'fixtures' / 'rigid-body-scenario.json'), '--output', str(output)],
+                                     str(input_path('rigid-body-scenario.json')), '--output', str(output)],
                                     cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))

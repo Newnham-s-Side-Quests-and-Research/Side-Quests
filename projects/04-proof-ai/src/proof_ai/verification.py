@@ -1,5 +1,6 @@
 """Verify supplied extraction results without processing payments."""
 from decimal import Decimal, InvalidOperation
+import hashlib
 import re
 
 
@@ -27,7 +28,7 @@ def _amount(value):
 
 
 def verify_invoice(extraction, policy):
-    if not isinstance(policy, dict) or set(policy) != {'supplier_id', 'currency', 'known_sources', 'existing_invoice_ids', 'rule_version'}:
+    if not isinstance(policy, dict) or set(policy) != {'supplier_id', 'currency', 'known_sources', 'source_texts', 'existing_invoice_ids', 'rule_version'}:
         raise VerificationError('Policy is invalid')
     supplier = _identifier(policy['supplier_id'], 'Expected supplier')
     currency = _identifier(policy['currency'], 'Expected currency')
@@ -43,6 +44,22 @@ def verify_invoice(extraction, policy):
         if len(set(values)) != len(values):
             raise VerificationError(f'{name} must not contain duplicates')
     known_sources = set(policy['known_sources'])
+    source_texts = policy['source_texts']
+    if not isinstance(source_texts, dict) or len(source_texts) > 10000:
+        raise VerificationError('Source texts must be a bounded object')
+    total_chars = 0
+    source_hashes = {}
+    for source_id, text in source_texts.items():
+        _identifier(source_id, 'Source ID')
+        if source_id not in known_sources or not isinstance(text, str) or len(text) > 1_000_000:
+            raise VerificationError('Invalid source text')
+        total_chars += len(text)
+        try:
+            source_hashes[source_id] = hashlib.sha256(text.encode('utf-8')).hexdigest()
+        except UnicodeEncodeError as exc:
+            raise VerificationError('Source text must be valid UTF8') from exc
+    if total_chars > 10_000_000:
+        raise VerificationError('Source texts exceed the size limit')
     previous = set(policy['existing_invoice_ids'])
     if not isinstance(extraction, dict) or set(extraction) != {'status', 'fields'}:
         raise VerificationError('Extraction must contain status and fields')
@@ -58,7 +75,7 @@ def verify_invoice(extraction, policy):
         if item is None:
             checks.append({'rule': 'field_present', 'field': field, 'passed': False, 'source_id': None})
             continue
-        if not isinstance(item, dict) or set(item) != {'value', 'source_id'}:
+        if not isinstance(item, dict) or set(item) not in ({'value', 'source_id'}, {'value', 'source_id', 'start', 'end'}):
             raise VerificationError(f'Invalid field object: {field}')
         source = item['source_id']
         source_ok = isinstance(source, str) and source in known_sources
@@ -75,6 +92,14 @@ def verify_invoice(extraction, policy):
                 valid = False
         checks.append({'rule': 'field_present', 'field': field, 'passed': valid, 'source_id': source if source_ok else None})
         checks.append({'rule': 'source_known', 'field': field, 'passed': source_ok, 'source_id': source if source_ok else None})
+        text = source_texts.get(source) if source_ok else None
+        start, end = item.get('start'), item.get('end')
+        span_ok = (isinstance(text, str) and isinstance(value, str) and type(start) is int and type(end) is int
+                   and 0 <= start < end <= len(text) and text[start:end] == value)
+        checks.append({'rule': 'source_span_matches', 'field': field, 'passed': span_ok,
+                       'source_id': source if span_ok else None,
+                       'start': start if span_ok else None, 'end': end if span_ok else None,
+                       'source_sha256': source_hashes[source] if span_ok else None})
     checks.append({'rule': 'supplier_match', 'passed': parsed.get('supplier_id') == supplier})
     checks.append({'rule': 'currency_match', 'passed': parsed.get('currency') == currency})
     invoice_id = parsed.get('invoice_id')
@@ -85,6 +110,6 @@ def verify_invoice(extraction, policy):
     return {'decision': 'checks_passed' if all(check['passed'] for check in checks) else 'review',
             'rule_version': version, 'checks': checks,
             'limitations': ['Consistent fields and arithmetic do not prove the document is genuine or correct',
-                            'Source identifiers are checked for membership but document content is not independently read',
+                            'Source text is supplied by the caller and is not authenticated or independently extracted',
                             'Passing checks does not approve the invoice',
                             'No payment, model call or human approval is performed']}

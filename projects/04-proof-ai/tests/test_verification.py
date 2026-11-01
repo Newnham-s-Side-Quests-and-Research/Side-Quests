@@ -15,9 +15,13 @@ from proof_ai.verification import VerificationError, verify_invoice
 def inputs():
     values = {'invoice_id': 'INV42', 'supplier_id': 'SUP1', 'currency': 'GBP',
               'subtotal': '100.10', 'tax': '20.02', 'total': '120.12'}
-    extraction = {'status': 'complete', 'fields': {key: {'value': value, 'source_id': 'page1'} for key, value in values.items()}}
+    source_text = ' | '.join(values.values())
+    extraction = {'status': 'complete', 'fields': {}}
+    for key, value in values.items():
+        start = source_text.index(value)
+        extraction['fields'][key] = {'value': value, 'source_id': 'page1', 'start': start, 'end': start + len(value)}
     policy = {'supplier_id': 'SUP1', 'currency': 'GBP', 'known_sources': ['page1'],
-              'existing_invoice_ids': ['INV41'], 'rule_version': '1'}
+              'source_texts': {'page1': source_text}, 'existing_invoice_ids': ['INV41'], 'rule_version': '1'}
     return extraction, policy
 
 
@@ -56,9 +60,27 @@ class VerificationTests(unittest.TestCase):
         extraction['fields']['subtotal']['value'] = '200.00'
         extraction['fields']['tax']['value'] = '40.00'
         extraction['fields']['total']['value'] = '240.00'
+        text = ' | '.join(item['value'] for item in extraction['fields'].values())
+        policy['source_texts']['page1'] = text
+        for item in extraction['fields'].values():
+            item['start'] = text.index(item['value'])
+            item['end'] = item['start'] + len(item['value'])
         result = verify_invoice(extraction, policy)
         self.assertEqual(result['decision'], 'checks_passed')
         self.assertIn('Consistent fields and arithmetic do not prove the document is genuine or correct', result['limitations'])
+
+    def test_missing_or_false_source_span_requires_review(self):
+        extraction, policy = inputs()
+        del extraction['fields']['total']['start']; del extraction['fields']['total']['end']
+        result = verify_invoice(extraction, policy)
+        self.assertEqual(result['decision'], 'review')
+        self.assertTrue(any(check['rule'] == 'source_span_matches' and not check['passed'] for check in result['checks']))
+        extraction, policy = inputs()
+        extraction['fields']['total']['start'] = 0
+        self.assertEqual(verify_invoice(extraction, policy)['decision'], 'review')
+        extraction, policy = inputs()
+        policy['source_texts']['page1'] = 'Changed source text'
+        self.assertEqual(verify_invoice(extraction, policy)['decision'], 'review')
 
     def test_cli_validates_and_preserves_existing_output_on_error(self):
         with tempfile.TemporaryDirectory() as temporary:

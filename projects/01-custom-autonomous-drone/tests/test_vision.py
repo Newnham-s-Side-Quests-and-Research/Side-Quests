@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,7 @@ from drone_archive.vision import VisionError, detect_regions
 
 class VisionTests(unittest.TestCase):
     def setUp(self):
-        self.fixture = json.loads((ROOT / 'fixtures' / 'image-scenario.json').read_text(encoding='utf-8'))
+        self.fixture = json.loads((input_path('image-scenario.json')).read_text(encoding='utf-8'))
 
     def test_detects_known_region_and_discards_small_noise(self):
         result = detect_regions(self.fixture['pixels'], 200, 3)
@@ -35,7 +36,7 @@ class VisionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'vision.json'
-            result = subprocess.run([sys.executable, '-m', 'drone_archive', 'vision', str(ROOT / 'fixtures' / 'image-scenario.json'), '--output', str(output)], cwd=tmp, env=env, capture_output=True, text=True)
+            result = subprocess.run([sys.executable, '-m', 'drone_archive', 'vision', str(input_path('image-scenario.json')), '--output', str(output)], cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))
             self.assertEqual(len(report['regions']), 1)

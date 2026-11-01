@@ -10,15 +10,11 @@ from .navigation import run_navigation
 ASSETS = Path(__file__).resolve().parents[2] / 'dashboard'
 
 class LocalDashboard(ThreadingHTTPServer):
-    def __init__(self, config, port=0):
+    def __init__(self, config, mission_config, nav_config, port=0):
         scenarios = build_scenarios(config)
         self.trace = json.dumps(scenarios[0]['report'], allow_nan=False).encode('utf-8')
         self.scenarios = json.dumps(scenarios, allow_nan=False).encode('utf-8')
-        mission_file = ASSETS.parent / 'fixtures' / 'mission3d-scenario.json'
-        mission_config = json.loads(mission_file.read_text(encoding='utf-8'))
         self.mission = json.dumps(run_mission(mission_config), allow_nan=False).encode('utf-8')
-        nav_file = ASSETS.parent / 'fixtures' / 'navigation-scenario.json'
-        nav_config = json.loads(nav_file.read_text(encoding='utf-8'))
         examples = []
         for name, wind in (('calm', 0), ('wind', 10)):
             settings = deepcopy(nav_config)

@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -16,7 +17,7 @@ from drone_archive.simulation import SimulationError
 
 class NavigationTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'navigation-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('navigation-scenario.json')).read_text(encoding='utf-8'))
 
     def test_segment_collision_detection_catches_crossing_between_samples(self):
         low, high = [0, 0, 0], [1, 1, 1]
@@ -73,7 +74,7 @@ class NavigationTests(unittest.TestCase):
             env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'mission.json'
             result = subprocess.run([sys.executable, '-m', 'drone_archive', 'navigation',
-                                     str(ROOT / 'fixtures' / 'navigation-scenario.json'), '--output', str(output)],
+                                     str(input_path('navigation-scenario.json')), '--output', str(output)],
                                     cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))

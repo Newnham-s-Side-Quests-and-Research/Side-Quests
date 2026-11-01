@@ -1,8 +1,0 @@
-{
-  "schema_version": 1,
-  "cases": [
-    {"id":"invoice-1","category":"normal","split":"test","rights":"synthetic","input":{"fields":{"amount":100,"supplier":"Oak"},"abstain":false},"expected":{"fields":{"amount":100,"supplier":"Oak"},"abstain":false}},
-    {"id":"invoice-2","category":"normal","split":"test","rights":"synthetic","input":{"fields":{"amount":250,"supplier":"Ash"},"abstain":false},"expected":{"fields":{"amount":250,"supplier":"Ash"},"abstain":false}},
-    {"id":"uncertain-1","category":"uncertain","split":"test","rights":"synthetic","input":{"fields":{},"abstain":true},"expected":{"fields":{},"abstain":true}}
-  ]
-}

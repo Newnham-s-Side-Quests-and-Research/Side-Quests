@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 from collections import deque
 import json
@@ -43,7 +44,7 @@ class VoxelPlannerTests(unittest.TestCase):
 
 class MissionTests(unittest.TestCase):
     def setUp(self):
-        self.config=json.loads((ROOT/'fixtures'/'mission3d-scenario.json').read_text(encoding='utf-8'))
+        self.config=json.loads((input_path('mission3d-scenario.json')).read_text(encoding='utf-8'))
 
     def test_route_reaches_goal_and_pauses_on_position_loss(self):
         original=copy.deepcopy(self.config);result=run_mission(self.config)
@@ -78,7 +79,7 @@ class MissionTests(unittest.TestCase):
     def test_command_writes_labelled_report(self):
         with tempfile.TemporaryDirectory() as tmp:
             env=os.environ.copy();env['PYTHONPATH']=str(ROOT/'src');output=Path(tmp)/'mission.json'
-            result=subprocess.run([sys.executable,'-m','drone_archive','mission3d',str(ROOT/'fixtures'/'mission3d-scenario.json'),'--output',str(output)],cwd=tmp,env=env,capture_output=True,text=True)
+            result=subprocess.run([sys.executable,'-m','drone_archive','mission3d',str(input_path('mission3d-scenario.json')),'--output',str(output)],cwd=tmp,env=env,capture_output=True,text=True)
             self.assertEqual(result.returncode,0,result.stderr)
             report=json.loads(output.read_text(encoding='utf-8'))
             self.assertEqual(report['status'],'complete')

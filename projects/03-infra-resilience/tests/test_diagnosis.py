@@ -46,7 +46,18 @@ class DiagnosisTests(unittest.TestCase):
                                {'event_id':'z', 'timestamp_ms':30, 'signal':'motor_hot', 'quality':'valid', 'alarm':False}])
         result = diagnose(data)
         self.assertEqual(result['status'], 'ambiguous')
+        self.assertIn('motor_hot', result['unavailable_signals'])
         self.assertTrue(all('a' not in item['evidence_ids'] for item in result['ranking']))
+
+    def test_newer_reading_clears_a_same_time_conflict(self):
+        data = example()
+        data['events'].extend([{'event_id':'a', 'timestamp_ms':30, 'signal':'motor_hot', 'quality':'valid', 'alarm':True},
+                               {'event_id':'z', 'timestamp_ms':30, 'signal':'motor_hot', 'quality':'valid', 'alarm':False},
+                               {'event_id':'new', 'timestamp_ms':31, 'signal':'motor_hot', 'quality':'valid', 'alarm':True}])
+        result = diagnose(data)
+        self.assertEqual(result['status'], 'ranked')
+        self.assertNotIn('motor_hot', result['unavailable_signals'])
+        self.assertIn('new', result['ranking'][0]['evidence_ids'])
 
     def test_duplicate_and_invalid_events_fail(self):
         data = example(); data['events'].append(copy.deepcopy(data['events'][0]))

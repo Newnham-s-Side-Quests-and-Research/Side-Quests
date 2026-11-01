@@ -1,1 +1,0 @@
-{"schema_version":1,"steps":100,"dt_seconds":0.05,"mass_kg":1.0,"gravity_m_s2":9.81,"drag_n_per_m_s":0.2,"wind_m_s":[1.0,0.0,0.0],"initial_position_m":[0.0,0.0,2.0],"initial_velocity_m_s":[0.0,0.0,0.0],"motor_thrust_n":[2.4525,2.4525,2.4525,2.4525],"motor_outage":null}

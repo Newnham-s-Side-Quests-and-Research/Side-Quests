@@ -76,6 +76,10 @@ class FrameTests(unittest.TestCase):
             result = subprocess.run(command, cwd=temporary, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 2)
             self.assertIn('Duplicate field', result.stderr)
+            path.write_bytes(b' ' * (MAX_FRAME_BYTES + 1))
+            result = subprocess.run(command, cwd=temporary, env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn('size limit', result.stderr)
 
 
 class MonitorTests(unittest.TestCase):

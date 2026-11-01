@@ -29,3 +29,6 @@ web-app/backend/static/
 # Local calculation record
 /projects/01-custom-autonomous-drone/dashboard/calculations.html
 /projects/01-custom-autonomous-drone/dashboard/calculations.css
+
+# Keep local input data out of the source repository
+/projects/*/fixtures/

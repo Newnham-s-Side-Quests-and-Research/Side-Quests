@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import json
 import math
 import os
@@ -76,7 +77,7 @@ class EstimatorTests(unittest.TestCase):
             self.assertTrue(all(math.isfinite(x) for row in p for x in row))
 
     def test_synthetic_replay_is_repeatable_and_records_gps_gaps(self):
-        config = json.loads((ROOT / 'fixtures' / 'signal-scenario.json').read_text(encoding='utf-8'))
+        config = json.loads((input_path('signal-scenario.json')).read_text(encoding='utf-8'))
         result = estimate_scenario(config)
         self.assertEqual(result, estimate_scenario(config))
         self.assertEqual(len(result['trace']), 50)
@@ -89,7 +90,7 @@ class EstimatorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')
             out = Path(tmp) / 'estimate.json'
-            run = subprocess.run([sys.executable, '-m', 'drone_archive', 'estimate', str(ROOT / 'fixtures' / 'signal-scenario.json'), '--output', str(out)], cwd=tmp, env=env, capture_output=True, text=True)
+            run = subprocess.run([sys.executable, '-m', 'drone_archive', 'estimate', str(input_path('signal-scenario.json')), '--output', str(out)], cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(run.returncode, 0, run.stderr)
             self.assertEqual(len(json.loads(out.read_text(encoding='utf-8'))['trace']), 50)
 

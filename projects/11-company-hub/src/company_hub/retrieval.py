@@ -28,6 +28,7 @@ class SourceIndex:
         if not isinstance(sources, list) or len(sources) > 10000:
             raise RetrievalError('Sources must be a bounded list')
         self._sources = {}
+        total_chars = 0
         for source in sources:
             if not isinstance(source, dict) or set(source) != {'source_id','version','text','roles'}:
                 raise RetrievalError('Invalid source fields')
@@ -38,10 +39,16 @@ class SourceIndex:
             text = source['text']
             if not isinstance(text, str) or not 1 <= len(text) <= 1_000_000:
                 raise RetrievalError('Source text must be nonempty and bounded')
+            total_chars += len(text)
+            if total_chars > 10_000_000:
+                raise RetrievalError('Total source text exceeds the size limit')
             roles = _roles(source['roles'])
             if not roles: raise RetrievalError('Each source must have an access role')
-            self._sources[key] = {'text':text, 'roles':roles,
-                                  'sha256':hashlib.sha256(text.encode('utf-8')).hexdigest()}
+            try:
+                digest = hashlib.sha256(text.encode('utf-8')).hexdigest()
+            except UnicodeEncodeError as exc:
+                raise RetrievalError('Source text must be valid UTF8') from exc
+            self._sources[key] = {'text':text, 'roles':roles, 'sha256':digest}
 
     def search(self, query, roles, limit=20):
         if not isinstance(query, str) or not 1 <= len(query) <= 256:

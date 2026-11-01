@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import os
@@ -13,9 +14,9 @@ from drone_archive.mission import run_demonstration
 
 class IntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'signal-scenario.json').read_text(encoding='utf-8'))
-        self.grid = json.loads((ROOT / 'fixtures' / 'grid-scenario.json').read_text(encoding='utf-8'))
-        self.image = json.loads((ROOT / 'fixtures' / 'image-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('signal-scenario.json')).read_text(encoding='utf-8'))
+        self.grid = json.loads((input_path('grid-scenario.json')).read_text(encoding='utf-8'))
+        self.image = json.loads((input_path('image-scenario.json')).read_text(encoding='utf-8'))
 
     def test_modules_share_the_same_simulated_samples(self):
         result = run_demonstration(self.config, self.grid, self.image)
@@ -41,8 +42,8 @@ class IntegrationTests(unittest.TestCase):
     def test_command_writes_reproducible_report(self):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src'); output = Path(tmp) / 'demo.json'
-            args = [sys.executable, '-m', 'drone_archive', 'demo', '--scenario', str(ROOT / 'fixtures' / 'signal-scenario.json'),
-                    '--grid', str(ROOT / 'fixtures' / 'grid-scenario.json'), '--image', str(ROOT / 'fixtures' / 'image-scenario.json'), '--output', str(output)]
+            args = [sys.executable, '-m', 'drone_archive', 'demo', '--scenario', str(input_path('signal-scenario.json')),
+                    '--grid', str(input_path('grid-scenario.json')), '--image', str(input_path('image-scenario.json')), '--output', str(output)]
             result = subprocess.run(args, cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))

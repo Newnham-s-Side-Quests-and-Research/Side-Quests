@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -15,7 +16,7 @@ from drone_archive.simulation import SimulationError
 
 class PointMassTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'point-mass-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('point-mass-scenario.json')).read_text(encoding='utf-8'))
 
     def test_stationary_hover_without_wind(self):
         config = dict(self.config, wind_m_s=[0, 0, 0])
@@ -66,7 +67,7 @@ class PointMassTests(unittest.TestCase):
             env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'report.json'
             result = subprocess.run([sys.executable, '-m', 'drone_archive', 'point-mass',
-                                     str(ROOT / 'fixtures' / 'point-mass-scenario.json'), '--output', str(output)],
+                                     str(input_path('point-mass-scenario.json')), '--output', str(output)],
                                     env=env, cwd=tmp, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(len(json.loads(output.read_text(encoding='utf-8'))['trace']), 100)

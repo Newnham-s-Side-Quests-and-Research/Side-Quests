@@ -31,6 +31,8 @@ def _quantity(value, name, minimum=1):
 class WorkflowStore:
     def __init__(self, path):
         self.path = str(path)
+        if self.path == ':memory:':
+            raise WorkflowError('A persistent database path is required')
         connection = self._connection()
         try:
             connection.executescript('''

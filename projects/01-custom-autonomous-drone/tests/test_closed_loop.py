@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -15,7 +16,7 @@ from drone_archive.simulation import SimulationError
 
 class ClosedLoopTests(unittest.TestCase):
     def setUp(self):
-        self.config = json.loads((ROOT / 'fixtures' / 'closed-loop-scenario.json').read_text(encoding='utf-8'))
+        self.config = json.loads((input_path('closed-loop-scenario.json')).read_text(encoding='utf-8'))
 
     def test_repeatable_healthy_tracking_and_seeded_campaign(self):
         config = copy.deepcopy(self.config)
@@ -107,7 +108,7 @@ class ClosedLoopTests(unittest.TestCase):
     def test_command_writes_trace(self):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src'); output = Path(tmp) / 'closed.json'
-            command = [sys.executable, '-m', 'drone_archive', 'closed', str(ROOT / 'fixtures' / 'closed-loop-scenario.json'), '--output', str(output)]
+            command = [sys.executable, '-m', 'drone_archive', 'closed', str(input_path('closed-loop-scenario.json')), '--output', str(output)]
             result = subprocess.run(command, cwd=tmp, env=env, text=True, capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(output.read_text(encoding='utf-8'))

@@ -20,7 +20,7 @@ from .rigid_body import simulate_rigid_body
 from .flight3d import run_controlled_flight
 from .c_controller import load_position_controller
 from .navigation import run_navigation
-from .telemetry_frames import FrameError, parse_frame
+from .telemetry_frames import FrameError, MAX_FRAME_BYTES, parse_frame
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -76,6 +76,8 @@ def main(argv=None):
     navigation.add_argument('--controller-library', help='Optional shared library built from the C controller')
     dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
     dashboard.add_argument('config')
+    dashboard.add_argument('--mission-config', required=True)
+    dashboard.add_argument('--navigation-config', required=True)
     dashboard.add_argument('--port', type=int, default=8766)
     args = parser.parse_args(argv)
     try:
@@ -83,14 +85,18 @@ def main(argv=None):
             if not 0 <= args.port <= 65535:
                 raise ValueError('Port must be between 0 and 65535')
             config = json.loads(Path(args.config).read_text(encoding='utf-8'))
-            with LocalDashboard(config, args.port) as server:
+            mission_config = json.loads(Path(args.mission_config).read_text(encoding='utf-8'))
+            navigation_config = json.loads(Path(args.navigation_config).read_text(encoding='utf-8'))
+            with LocalDashboard(config, mission_config, navigation_config, args.port) as server:
                 print(f'Synthetic dashboard: http://127.0.0.1:{server.server_port}', flush=True)
                 try:
                     server.serve_forever()
                 except KeyboardInterrupt:
                     pass
         elif args.command == 'validate-frame':
-            frame = parse_frame(Path(args.file).read_bytes())
+            with Path(args.file).open('rb') as source:
+                payload = source.read(MAX_FRAME_BYTES + 1)
+            frame = parse_frame(payload)
             print(json.dumps(frame, indent=2, allow_nan=False))
         elif args.command == 'hash':
             print(hash_file(args.file))

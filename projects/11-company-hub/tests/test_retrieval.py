@@ -44,6 +44,10 @@ class RetrievalTests(unittest.TestCase):
         with self.assertRaises(RetrievalError):SourceIndex(sources()+[sources()[0]])
         bad=sources();bad[0]['roles']=[]
         with self.assertRaises(RetrievalError):SourceIndex(bad)
+        bad=sources();bad[0]['text']='\ud800'
+        with self.assertRaises(RetrievalError):SourceIndex(bad)
+        oversized=[{'source_id':f's{i}','version':'v1','text':'x'*1_000_000,'roles':['staff']} for i in range(11)]
+        with self.assertRaises(RetrievalError):SourceIndex(oversized)
 
     def test_command_returns_only_authorised_matches(self):
         with tempfile.TemporaryDirectory() as tmp:

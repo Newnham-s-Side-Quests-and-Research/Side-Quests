@@ -1,30 +1,45 @@
 """Command line entry point for a local synthetic comparison."""
 import argparse
 import json
+import importlib
 import platform
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from .adapters import FixtureAdapter
 from .cases import CaseError, load_cases
 from .gates import evaluate
 from .runner import compare
 
 RULES = {'version': 1, 'minimum_cases': 3, 'minimum_field_delta': 0.0, 'minimum_abstention_accuracy': 1.0}
 
+def load_adapter(reference):
+    module_name, separator, name = reference.partition(':')
+    if not separator or not module_name or not name:
+        raise ValueError('Adapter must use module:class notation')
+    try:
+        adapter = getattr(importlib.import_module(module_name), name)()
+    except (ImportError, AttributeError, TypeError) as exc:
+        raise ValueError('Unable to load adapter: ' + reference) from exc
+    if not callable(getattr(adapter, 'run', None)) or not isinstance(getattr(adapter, 'version', None), str):
+        raise ValueError('Adapter must provide a run method and version string')
+    return adapter
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Compare deterministic workflow fixtures')
+    parser = argparse.ArgumentParser(description='Compare workflow adapters against labelled cases')
     parser.add_argument('--cases', required=True, help='Path to a versioned JSON case set')
-    parser.add_argument('--candidate', choices=('sound', 'wrong_field', 'false_accept', 'false_abstain'), default='sound')
+    parser.add_argument('--baseline', required=True, help='Baseline adapter as module:class')
+    parser.add_argument('--candidate', required=True, help='Candidate adapter as module:class')
     parser.add_argument('--output', required=True, help='Directory for JSON and text reports')
     args = parser.parse_args(argv)
     try:
         case_set, digest = load_cases(args.cases)
+        baseline = load_adapter(args.baseline)
+        candidate = load_adapter(args.candidate)
     except (CaseError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 3
-    baseline = FixtureAdapter('sound'); candidate = FixtureAdapter(args.candidate)
     settings = {}
     scores = compare(case_set['cases'], baseline, candidate, settings)
     gate = evaluate(scores, RULES.copy())

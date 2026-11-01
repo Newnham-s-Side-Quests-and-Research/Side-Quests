@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import math
@@ -38,7 +39,7 @@ class MetricTests(unittest.TestCase):
 
 class ScenarioTests(unittest.TestCase):
     def test_scenarios_are_reproducible_and_preserve_input(self):
-        config=json.loads((ROOT/'fixtures'/'closed-loop-scenario.json').read_text(encoding='utf-8'))
+        config=json.loads((input_path('closed-loop-scenario.json')).read_text(encoding='utf-8'))
         original=copy.deepcopy(config)
         scenarios=build_scenarios(config)
         self.assertEqual(config,original)

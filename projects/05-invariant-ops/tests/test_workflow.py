@@ -55,6 +55,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(len(self.store.outbox()), 3)
 
     def test_conflicts_and_invariants_do_not_create_events(self):
+        with self.assertRaises(WorkflowError): WorkflowStore(':memory:')
         self.store.apply(order())
         changed = copy.deepcopy(order()); changed['payload']['quantity'] = 8
         with self.assertRaises(WorkflowError): self.store.apply(changed)

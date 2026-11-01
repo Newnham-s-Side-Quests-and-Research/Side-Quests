@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 from pathlib import Path
@@ -13,7 +14,7 @@ from drone_archive.simulation import SimulationError
 
 class PowerModelTests(unittest.TestCase):
     def setUp(self):
-        flight = json.loads((ROOT / 'fixtures' / 'controlled-flight-scenario.json').read_text(encoding='utf-8'))
+        flight = json.loads((input_path('controlled-flight-scenario.json')).read_text(encoding='utf-8'))
         self.config = flight['plant']['power_model']
         self.plant = flight['plant']
 

@@ -57,11 +57,19 @@ def diagnose(data):
         valid.append({'event_id': event_id, 'timestamp_ms': timestamp, 'signal': signal,
                       'quality': event['quality'], 'alarm': event['alarm']})
     ordered = sorted(valid, key=lambda event: (event['timestamp_ms'], event['event_id']))
-    latest = {event['signal']: event for event in ordered}
-    alarms = {signal: event for signal, event in latest.items() if event['quality'] == 'valid' and event['alarm']}
+    latest = {}
+    conflicts = set()
+    for event in ordered:
+        previous = latest.get(event['signal'])
+        if previous is None or event['timestamp_ms'] > previous['timestamp_ms']:
+            latest[event['signal']] = event
+            conflicts.discard(event['signal'])
+        elif (event['quality'], event['alarm']) != (previous['quality'], previous['alarm']):
+            conflicts.add(event['signal'])
+    alarms = {signal: event for signal, event in latest.items() if signal not in conflicts and event['quality'] == 'valid' and event['alarm']}
     required_signals = set().union(*causes.values())
     unavailable = sorted((required_signals - latest.keys()) |
-                         {signal for signal, event in latest.items() if event['quality'] != 'valid'})
+                         {signal for signal, event in latest.items() if event['quality'] != 'valid'} | conflicts)
     ranking = []
     for cause, signals in causes.items():
         matched = sorted(signals & alarms.keys())
@@ -73,5 +81,5 @@ def diagnose(data):
     return {'schema_version': 1, 'status': status, 'ranking': ranking, 'unavailable_signals': unavailable,
             'events_processed': len(ordered),
             'limitations': ['Ranking is based on configured signal associations and is not proof of causation',
-                            'Only the newest event for each signal is used',
+                            'Only the newest event time for each signal is used and conflicting events at that time are unavailable',
                             'No plant control or protective action is performed']}

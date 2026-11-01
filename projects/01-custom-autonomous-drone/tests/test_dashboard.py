@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import json
 from pathlib import Path
 import sys
@@ -13,8 +14,10 @@ from drone_archive.dashboard import LocalDashboard
 class DashboardTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        config = json.loads((ROOT / 'fixtures' / 'closed-loop-scenario.json').read_text(encoding='utf-8'))
-        cls.server = LocalDashboard(config)
+        config = json.loads((input_path('closed-loop-scenario.json')).read_text(encoding='utf-8'))
+        mission = json.loads(input_path('mission3d-scenario.json').read_text(encoding='utf-8'))
+        navigation = json.loads(input_path('navigation-scenario.json').read_text(encoding='utf-8'))
+        cls.server = LocalDashboard(config, mission, navigation)
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
         cls.url = f'http://127.0.0.1:{cls.server.server_port}'

@@ -1,3 +1,4 @@
+from test_inputs import input_path
 import copy
 import json
 import sys
@@ -14,7 +15,7 @@ from drone_archive.telemetry import TelemetryError, build_snapshot
 
 class TelemetryTests(unittest.TestCase):
     def setUp(self):
-        config = json.loads((ROOT / 'fixtures' / 'signal-scenario.json').read_text(encoding='utf-8'))
+        config = json.loads((input_path('signal-scenario.json')).read_text(encoding='utf-8'))
         self.trace = simulate(config)['trace']
 
     def test_unknown_hardware_is_not_invented(self):
@@ -34,7 +35,7 @@ class TelemetryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             env = os.environ.copy(); env['PYTHONPATH'] = str(ROOT / 'src')
             output = Path(tmp) / 'telemetry.json'
-            result = subprocess.run([sys.executable, '-m', 'drone_archive', 'telemetry', str(ROOT / 'fixtures' / 'signal-scenario.json'), '--output', str(output)], cwd=tmp, env=env, capture_output=True, text=True)
+            result = subprocess.run([sys.executable, '-m', 'drone_archive', 'telemetry', str(input_path('signal-scenario.json')), '--output', str(output)], cwd=tmp, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             rows = json.loads(output.read_text(encoding='utf-8'))['trace']
             self.assertEqual(len(rows), 50)
