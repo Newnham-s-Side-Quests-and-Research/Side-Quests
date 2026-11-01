@@ -68,6 +68,13 @@ async def run(base_url, output):
                 await page.locator('#mission-step').fill('31')
                 if await page.locator('#mission-state').inner_text() != 'Complete in model':
                     raise AssertionError('Mission completion is not shown')
+                await page.locator('#navigation-scenario:not([disabled])').wait_for()
+                await page.locator('#navigation-step').fill(await page.locator('#navigation-step').get_attribute('max'))
+                if await page.locator('#navigation-progress').inner_text() != '7 / 7':
+                    raise AssertionError('Controlled mission progress is not shown')
+                await page.select_option('#navigation-scenario', 'wind')
+                if 'blocked cell' not in (await page.locator('#navigation-outcome').inner_text()).lower():
+                    raise AssertionError('Obstacle contact is not shown')
                 await page.screenshot(path=str(output / f'{name}.png'), full_page=True)
                 await page.get_by_role('link', name='Read the mathematical calculations').click()
                 if await page.locator('math[display="block"]').count() != 7:

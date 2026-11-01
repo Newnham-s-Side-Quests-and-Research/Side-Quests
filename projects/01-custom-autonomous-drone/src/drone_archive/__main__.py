@@ -19,6 +19,7 @@ from .point_mass import simulate_point_mass
 from .rigid_body import simulate_rigid_body
 from .flight3d import run_controlled_flight
 from .c_controller import load_position_controller
+from .navigation import run_navigation
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -66,6 +67,10 @@ def main(argv=None):
     controlled.add_argument('config')
     controlled.add_argument('--output', required=True)
     controlled.add_argument('--controller-library', help='Optional shared library built from the C controller')
+    navigation = commands.add_parser('navigation', help='Run a synthetic controlled voxel mission')
+    navigation.add_argument('config')
+    navigation.add_argument('--output', required=True)
+    navigation.add_argument('--controller-library', help='Optional shared library built from the C controller')
     dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
     dashboard.add_argument('config')
     dashboard.add_argument('--port', type=int, default=8766)
@@ -91,6 +96,16 @@ def main(argv=None):
             results = verify_files(data, args.root)
             print(json.dumps(results, indent=2))
             return 0 if results and all(item['status'] == 'matched' for item in results) else 1
+        elif args.command == 'navigation':
+            config = json.loads(Path(args.config).read_text(encoding='utf-8'))
+            controller = load_position_controller(args.controller_library) if args.controller_library else None
+            result = run_navigation(config, position_controller=controller)
+            result['python_version'] = platform.python_version()
+            destination = Path(args.output)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+            print(f"Mission status: {result['status']}")
+            return 0 if result['status'] == 'complete' else 1
         elif args.command == 'mission3d':
             config = json.loads(Path(args.config).read_text(encoding='utf-8'))
             result = run_mission(config)

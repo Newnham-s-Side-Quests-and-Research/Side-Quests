@@ -1,9 +1,11 @@
 """Serve a read only synthetic dashboard on the local machine."""
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+from copy import deepcopy
 from pathlib import Path
 from .scenarios import build_scenarios
 from .mission3d import run_mission
+from .navigation import run_navigation
 
 ASSETS = Path(__file__).resolve().parents[2] / 'dashboard'
 
@@ -15,6 +17,28 @@ class LocalDashboard(ThreadingHTTPServer):
         mission_file = ASSETS.parent / 'fixtures' / 'mission3d-scenario.json'
         mission_config = json.loads(mission_file.read_text(encoding='utf-8'))
         self.mission = json.dumps(run_mission(mission_config), allow_nan=False).encode('utf-8')
+        nav_file = ASSETS.parent / 'fixtures' / 'navigation-scenario.json'
+        nav_config = json.loads(nav_file.read_text(encoding='utf-8'))
+        examples = []
+        for name, wind in (('calm', 0), ('wind', 10)):
+            settings = deepcopy(nav_config)
+            settings['flight']['plant']['wind_m_s'] = [wind, 0, 0]
+            result = run_navigation(settings)
+            rows = result['flight']['trace']
+            selected = rows[::20]
+            if rows and selected[-1]['step'] != rows[-1]['step']:
+                selected.append(rows[-1])
+            samples = [{'step': row['step'], 'time_s': row['time_s'], 'position_m': row['position_m'],
+                        'target_m': row['controller']['target_position_m'],
+                        'estimated_altitude_m': row['controller']['estimated_altitude_m'],
+                        'motor_thrust_n': row['motor_thrust_n']} for row in selected]
+            examples.append({'id': name, 'wind_m_s': wind, 'status': result['status'],
+                             'route': result['route'], 'waypoints_m': result['waypoints_m'],
+                             'waypoint_events': result['waypoint_events'], 'samples': samples,
+                             'terminal_event': result['flight']['terminal_event'],
+                             'grid': settings['grid'], 'origin_m': settings['origin_m'],
+                             'cell_size_m': settings['cell_size_m']})
+        self.navigation = json.dumps(examples, allow_nan=False).encode('utf-8')
         super().__init__(('127.0.0.1', port), DashboardHandler)
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -23,7 +47,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                   '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8'),
                   '/calculations': ('calculations.html', 'text/html; charset=utf-8'),
-                  '/calculations.css': ('calculations.css', 'text/css; charset=utf-8')}
+                  '/calculations.css': ('calculations.css', 'text/css; charset=utf-8'),
+                  '/navigation.js': ('navigation.js', 'text/javascript; charset=utf-8')}
+        if self.path == '/api/navigation':
+            return self.respond(200, 'application/json; charset=utf-8', self.server.navigation)
         if self.path == '/api/mission':
             return self.respond(200, 'application/json; charset=utf-8', self.server.mission)
         if self.path == '/api/scenarios':

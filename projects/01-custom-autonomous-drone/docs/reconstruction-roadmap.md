@@ -34,7 +34,7 @@ Telemetry snapshots expose the simulated readings and link availability flags. T
 
 A separate point mass example calculates position and velocity in three axes from four prescribed upward thrust values, gravity and linear drag relative to wind. It stops at a flat ground surface. The aircraft is held level and there is no torque or attitude model. Motor loss changes total thrust but does not represent the rotation or other effects on a real aircraft.
 
-A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. A separate controlled example connects it to a position controller and a pressure based vertical filter. The position controller can use Python or a compiled C calculation. Horizontal position and velocity and full attitude come directly from the model. The model has not been validated against an independent flight simulator or physical aircraft and is not connected to the route planner.
+A further rigid body model adds rotor moments, quaternion attitude, angular velocity and a first order motor response. Its configuration is illustrative. A separate controlled example connects it to a position controller and a pressure based vertical filter. The position controller can use Python or a compiled C calculation. A static voxel route can supply waypoint targets to that controller. The resulting point path is checked against blocked cells and grid bounds. Horizontal position and velocity and full attitude come directly from the model. The model has not been validated against an independent flight simulator or physical aircraft.
 
 ## Later engineering stages
 
@@ -52,7 +52,7 @@ Choose a concrete task and labelled dataset before selecting a method. Define th
 
 ### Path planning and autonomy
 
-Specify the map representation, geofence, mission states and the authority to start or stop a mission. Test route planning, blocked destinations and changing obstacles separately from control. The current grid planner has fixed obstacles and simplified motion. A route is not a verified flight trajectory. Dynamic avoidance and autonomous flight are not implemented yet.
+Specify the map representation, geofence, mission states and the authority to start or stop a mission. The connected example checks a point path against a static voxel map and reports obstacle contact or a grid exit. It does not use the aircraft footprint or detect and avoid changing obstacles. A route is not a verified flight trajectory. Real autonomous flight is not implemented or verified.
 
 ### Telemetry and connectivity
 

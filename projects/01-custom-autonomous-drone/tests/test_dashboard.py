@@ -35,6 +35,10 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(mission['status'], 'complete')
             self.assertEqual(len(mission['trace']), 32)
             self.assertIn('No attitude, motor, wind, battery or three dimensional flight dynamics', mission['limitations'])
+        with urlopen(self.url + '/api/navigation', timeout=3) as response:
+            examples = json.load(response)
+            self.assertEqual([example['status'] for example in examples], ['complete', 'obstacle_contact'])
+            self.assertTrue(all(example['samples'] for example in examples))
         with urlopen(self.url + '/api/scenarios', timeout=3) as response:
             scenarios = json.load(response)
             self.assertEqual(len(scenarios), 6)
@@ -46,7 +50,7 @@ class DashboardTests(unittest.TestCase):
             report = json.load(response)
             self.assertEqual(len(report['trace']), 300)
             self.assertIn('No original aircraft behaviour or physical flight safety is verified', report['limitations'])
-        for path in ('/app.js', '/style.css', '/calculations', '/calculations.css', '/api/health'):
+        for path in ('/app.js', '/navigation.js', '/style.css', '/calculations', '/calculations.css', '/api/health'):
             with urlopen(self.url + path, timeout=3) as response: self.assertEqual(response.status, 200)
 
     def test_unknown_paths_and_writes_are_not_supported(self):

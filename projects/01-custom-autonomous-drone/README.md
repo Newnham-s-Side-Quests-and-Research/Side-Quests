@@ -20,6 +20,8 @@ A separate rigid body model adds a quaternion attitude, rotor moments, body angu
 
 A controlled rigid body example connects a position controller and a vertical pressure filter to that model. Horizontal position and velocity and the full attitude are ideal model values. A portable C position calculation can be loaded into the Python simulation as an alternative to the Python calculation. This is a new reconstruction rather than recovered flight controller code.
 
+A synthetic navigation example connects the voxel planner to the controlled model. It follows waypoint targets and checks the point model against static blocked cells and a bounded grid. The local dashboard can replay still air and wind scenarios. The point check does not represent the full aircraft footprint or prove a safe path.
+
 ## Run the checks
 
 From this folder run:
@@ -86,6 +88,14 @@ To run the controlled rigid body example:
 ```powershell
 python -m drone_archive controlled-flight fixtures/controlled-flight-scenario.json --output results/controlled-flight.json
 ```
+
+To run the connected navigation example:
+
+```powershell
+python -m drone_archive navigation fixtures/navigation-scenario.json --output results/navigation.json
+```
+
+The navigation command also accepts the optional C controller library. Its output contains the full synthetic trace and waypoint events. The dashboard replay samples that trace rather than showing every integration step.
 
 The optional C position calculation can be compiled as a shared library with a C11 compiler. For example on Windows with Zig installed:
 

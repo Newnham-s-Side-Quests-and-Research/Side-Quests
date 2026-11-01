@@ -35,7 +35,7 @@ def _euler(q):
     return roll, pitch, yaw
 
 
-def run_controlled_flight(config, position_controller=None):
+def run_controlled_flight(config, position_controller=None, target_provider=None, stop_condition=None):
     if not isinstance(config, dict) or config.get('schema_version') != 1:
         raise SimulationError('Controlled flight configuration must use schema version 1')
     plant = config.get('plant')
@@ -82,6 +82,9 @@ def run_controlled_flight(config, position_controller=None):
     imu_rng = random.Random(f'{seed}:acceleration')
 
     def control(state):
+        current_target = target if target_provider is None else _vector(target_provider(state), 'provided target')
+        if current_target[2] <= 0:
+            raise SimulationError('Provided target altitude must be above ground')
         previous = state['previous_acceleration_m_s2']
         measured_acceleration = None
         if previous is not None:
@@ -92,9 +95,9 @@ def run_controlled_flight(config, position_controller=None):
         estimated_position = [state['position_m'][0], state['position_m'][1], estimator.altitude_m]
         estimated_velocity = [state['velocity_m_s'][0], state['velocity_m_s'][1], estimator.velocity_m_s]
         if position_controller is None:
-            acceleration = [kp[i] * (target[i] - estimated_position[i]) - kd[i] * estimated_velocity[i] for i in range(3)]
+            acceleration = [kp[i] * (current_target[i] - estimated_position[i]) - kd[i] * estimated_velocity[i] for i in range(3)]
         else:
-            acceleration = position_controller(target, estimated_position, estimated_velocity, kp, kd)
+            acceleration = position_controller(current_target, estimated_position, estimated_velocity, kp, kd)
             acceleration = _vector(acceleration, 'position controller acceleration')
         roll, pitch, yaw = _euler(state['quaternion_wxyz'])
         desired_roll = max(-tilt, min(tilt, -acceleration[1] / gravity))
@@ -112,12 +115,12 @@ def run_controlled_flight(config, position_controller=None):
                           'vertical_acceleration_m_s2': measured_acceleration,
                           'estimated_altitude_m': estimator.altitude_m, 'estimated_vertical_velocity_m_s': estimator.velocity_m_s,
                           'estimated_altitude_variance_m2': estimator.covariance[0][0],
-                          'target_position_m': target.copy(), 'desired_attitude_rad': desired_angles,
+                          'target_position_m': current_target.copy(), 'desired_attitude_rad': desired_angles,
                           'attitude_rad': list(angles), 'requested_collective_n': collective,
                           'requested_moments_nm': moments, 'unclamped_motor_commands_n': requested,
                           'allocation_saturated': commands != requested}
 
-    report = simulate_rigid_body(plant, controller=control)
+    report = simulate_rigid_body(plant, controller=control, stop_condition=stop_condition)
     report['model'] = 'synthetic controlled rigid body with vertical pressure filter'
     report['controller_configuration'] = settings
     report['limitations'].extend(['Horizontal position, velocity and full attitude are ideal model state',

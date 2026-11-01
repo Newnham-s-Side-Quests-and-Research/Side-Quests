@@ -8,3 +8,4 @@
 .chart-legend .mission-goal{height:10px;width:10px;border:1px solid #284a34;background:#fff;border-radius:50%}
 
 .chart-legend .target{background:#526d94}.target-line{stroke:#526d94;stroke-width:1.5;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+.navigation-card svg{height:270px}#navigation-obstacles rect{fill:#dcb9a9;fill-opacity:.55;stroke:#a55f47;vector-effect:non-scaling-stroke}#navigation-position{fill:#203027;stroke:white;stroke-width:2;vector-effect:non-scaling-stroke}#navigation-position-text{font-size:16px;overflow-wrap:anywhere}@media(max-width:700px){.navigation-card svg{height:180px}#navigation-position-text{font-size:14px}}

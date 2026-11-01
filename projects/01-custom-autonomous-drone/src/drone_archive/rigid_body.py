@@ -44,7 +44,7 @@ def _window(value, steps):
     return motor, start, end
 
 
-def simulate_rigid_body(config, controller=None):
+def simulate_rigid_body(config, controller=None, stop_condition=None):
     if not isinstance(config, dict) or config.get('schema_version') != 1:
         raise SimulationError('Rigid body configuration must use schema version 1')
     steps = config.get('steps')
@@ -86,14 +86,23 @@ def simulate_rigid_body(config, controller=None):
     trace = []
     contact = None
     previous_acceleration = None
+    previous_position = None
     for step in range(steps):
         applied_command = command.copy()
         controller_record = None
+        controller_state = {'step': step, 'time_s': step * dt, 'position_m': position.copy(),
+                            'velocity_m_s': velocity.copy(), 'quaternion_wxyz': attitude.copy(),
+                            'body_rate_rad_s': omega.copy(),
+                            'previous_position_m': None if previous_position is None else previous_position.copy(),
+                            'previous_acceleration_m_s2': None if previous_acceleration is None else previous_acceleration.copy()}
+        if stop_condition is not None:
+            event = stop_condition(controller_state)
+            if event is not None:
+                if not isinstance(event, dict) or not isinstance(event.get('type'), str):
+                    raise SimulationError('Stop condition must return an event object or None')
+                contact = {**event, 'time_s': step * dt, 'before_step': step}
+                break
         if controller is not None:
-            controller_state = {'step': step, 'time_s': step * dt, 'position_m': position.copy(),
-                                'velocity_m_s': velocity.copy(), 'quaternion_wxyz': attitude.copy(),
-                                'body_rate_rad_s': omega.copy(),
-                                'previous_acceleration_m_s2': None if previous_acceleration is None else previous_acceleration.copy()}
             response = controller(controller_state)
             if not isinstance(response, tuple) or len(response) != 2:
                 raise SimulationError('Controller must return commands and a record')
@@ -137,6 +146,7 @@ def simulate_rigid_body(config, controller=None):
             contact = {'type': 'ground_contact', 'time_s': (step + fraction) * dt, 'after_step': step}
             # The terminal attitude and motors are not interpolated.
             break
+        previous_position = position.copy()
         position, velocity, omega, attitude, thrust = next_position, next_velocity, next_omega, next_attitude, next_thrust
         previous_acceleration = acceleration
     limitations = ['Synthetic parameters are not measured from the original aircraft',
