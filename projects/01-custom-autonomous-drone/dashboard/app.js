@@ -165,3 +165,68 @@ fetch('/api/scenarios').then(response => {
   find('error').textContent = 'The simulation could not be loaded. Check the local server and try again.';
   find('error').hidden = false;
 });
+
+let mission = null;
+let missionPosition = 0;
+let missionTimer = null;
+let projectPoint = null;
+function stopMission() {
+  if (missionTimer !== null) clearInterval(missionTimer);
+  missionTimer = null;
+  find('mission-play').textContent = 'Play';
+}
+function renderMission() {
+  if (!mission || !mission.trace.length) return;
+  const sample = mission.trace[missionPosition];
+  const completed = missionPosition === mission.trace.length - 1 && mission.status === 'complete';
+  find('mission-state').textContent = completed ? 'Complete in model' : sample.state === 'moving' ? 'Moving in model' : 'Paused in model';
+  find('mission-signal').textContent = sample.position_available ? 'Available' : 'Unavailable';
+  find('mission-coordinates').textContent = sample.position_after_m.map(value => value.toFixed(2)).join(', ') + ' m';
+  find('mission-distance').textContent = `${((mission.route.length - 1) * mission.configuration.cell_size_m).toFixed(2)} m`;
+  find('mission-step').value = missionPosition;
+  find('mission-step-label').textContent = `${missionPosition + 1} / ${mission.trace.length}`;
+  const point = projectPoint(sample.position_after_m.map(value => value / mission.configuration.cell_size_m));
+  find('mission-position').setAttribute('cx', point[0]); find('mission-position').setAttribute('cy', point[1]);
+}
+function drawMission() {
+  const size = mission.configuration.grid.size;
+  const raw = point => [point[0] - point[1], (point[0] + point[1]) / 2 - point[2]];
+  const corners = [];
+  for (const x of [0, size[0] - 1]) for (const y of [0, size[1] - 1]) for (const z of [0, size[2] - 1]) corners.push(raw([x,y,z]));
+  const xs = corners.map(point => point[0]); const ys = corners.map(point => point[1]);
+  const minX = Math.min(...xs); const maxX = Math.max(...xs); const minY = Math.min(...ys); const maxY = Math.max(...ys);
+  const scale = Math.min(680 / Math.max(1, maxX - minX), 240 / Math.max(1, maxY - minY));
+  projectPoint = point => { const projected = raw(point); return [400 + (projected[0] - (minX + maxX) / 2) * scale, 160 + (projected[1] - (minY + maxY) / 2) * scale]; };
+  const spanX = (maxX - minX) * scale; const spanY = (maxY - minY) * scale;
+  find('mission-chart').setAttribute('viewBox', `${400 - spanX / 2 - 25} ${160 - spanY / 2 - 25} ${Math.max(50, spanX + 50)} ${Math.max(50, spanY + 50)}`);
+  const obstacleLayer = find('mission-obstacles'); obstacleLayer.replaceChildren();
+  for (const obstacle of mission.configuration.grid.blocked) {
+    const point = projectPoint(obstacle); const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', point[0]); circle.setAttribute('cy', point[1]); circle.setAttribute('r', '7'); obstacleLayer.appendChild(circle);
+  }
+  find('mission-route').setAttribute('points', mission.route.map(point => projectPoint(point).join(',')).join(' '));
+  const goal = projectPoint(mission.route[mission.route.length - 1]);
+  find('mission-goal').setAttribute('cx', goal[0]); find('mission-goal').setAttribute('cy', goal[1]);
+}
+find('mission-play').addEventListener('click', () => {
+  if (missionTimer !== null) { stopMission(); return; }
+  if (missionPosition >= mission.trace.length - 1) missionPosition = 0;
+  find('mission-play').textContent = 'Pause'; renderMission();
+  missionTimer = setInterval(() => {
+    if (missionPosition >= mission.trace.length - 1) { stopMission(); return; }
+    missionPosition += 1; renderMission();
+  }, 150);
+});
+find('mission-step').addEventListener('input', event => { stopMission(); missionPosition = Number(event.target.value); renderMission(); });
+fetch('/api/mission').then(response => {
+  if (!response.ok) throw Error('Unable to load mission');
+  return response.json();
+}).then(report => {
+  if (!Array.isArray(report.route) || !report.route.length || !Array.isArray(report.trace) || !report.trace.length) {
+    find('mission-state').textContent = report.status === 'no route' ? 'No route in model' : 'No movement to replay'; return;
+  }
+  mission = report;
+  find('mission-step').max = mission.trace.length - 1;
+  find('mission-step').disabled = false; find('mission-play').disabled = false;
+  drawMission(); renderMission();
+}).catch(() => { find('mission-state').textContent = 'Unable to load'; });

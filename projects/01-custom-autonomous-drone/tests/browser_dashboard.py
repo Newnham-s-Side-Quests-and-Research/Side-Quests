@@ -57,6 +57,15 @@ async def run(base_url, output):
                 data = json.loads(Path(await download.path()).read_text(encoding='utf-8'))
                 if data['battery_example']['cells_in_series'] != 3:
                     raise AssertionError('Downloaded battery example is not three cell')
+                await page.locator('#mission-step:not([disabled])').wait_for()
+                await page.locator('#mission-step').fill('3')
+                if await page.locator('#mission-state').inner_text() != 'Paused in model':
+                    raise AssertionError('Position loss is not shown in the mission')
+                if await page.locator('#mission-signal').inner_text() != 'Unavailable':
+                    raise AssertionError('Missing mission position is not shown')
+                await page.locator('#mission-step').fill('31')
+                if await page.locator('#mission-state').inner_text() != 'Complete in model':
+                    raise AssertionError('Mission completion is not shown')
                 await page.screenshot(path=str(output / f'{name}.png'), full_page=True)
                 if errors:
                     raise AssertionError(f'Browser errors: {errors}')

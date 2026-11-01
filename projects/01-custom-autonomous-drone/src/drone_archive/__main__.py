@@ -14,6 +14,7 @@ from .vision import VisionError, detect_regions
 from .mission import run_demonstration
 from .closed_loop import simulate_closed_loop
 from .dashboard import LocalDashboard
+from .mission3d import MissionError, run_mission
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Drone evidence and illustrative signal simulation')
@@ -48,6 +49,9 @@ def main(argv=None):
     closed = commands.add_parser('closed', help='Run the synthetic closed loop vertical model')
     closed.add_argument('config')
     closed.add_argument('--output', required=True)
+    spatial = commands.add_parser('mission3d', help='Run a synthetic three dimensional kinematic mission')
+    spatial.add_argument('config')
+    spatial.add_argument('--output', required=True)
     dashboard = commands.add_parser('dashboard', help='Open a local synthetic telemetry dashboard')
     dashboard.add_argument('config')
     dashboard.add_argument('--port', type=int, default=8766)
@@ -73,6 +77,15 @@ def main(argv=None):
             results = verify_files(data, args.root)
             print(json.dumps(results, indent=2))
             return 0 if results and all(item['status'] == 'matched' for item in results) else 1
+        elif args.command == 'mission3d':
+            config = json.loads(Path(args.config).read_text(encoding='utf-8'))
+            result = run_mission(config)
+            result['python_version'] = platform.python_version()
+            destination = Path(args.output)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+            print(f"Mission status: {result['status']}")
+            return 0 if result['status'] == 'complete' else 1
         elif args.command == 'demo':
             config = json.loads(Path(args.scenario).read_text(encoding='utf-8'))
             grid = json.loads(Path(args.grid).read_text(encoding='utf-8'))
@@ -120,7 +133,7 @@ def main(argv=None):
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n', encoding='utf-8')
             print(f"Wrote {len(result['trace'])} simulated steps to {destination}")
-    except (OSError, ValueError, EvidenceError, SimulationError, EstimationError, PlanningError, TelemetryError, VisionError) as exc:
+    except (OSError, ValueError, EvidenceError, SimulationError, EstimationError, PlanningError, TelemetryError, VisionError, MissionError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
     return 0

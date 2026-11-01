@@ -26,6 +26,8 @@ The vertical estimator uses a two state extended Kalman filter. Its state is alt
 
 The planner uses a synthetic two dimensional occupancy grid. It finds a shortest four direction route through clear cells. It does not create a flyable trajectory and it has no obstacle perception, aircraft dynamics or geographic coordinates.
 
+A separate three dimensional grid planner and kinematic mission can find a route around blocked cells. The model moves at a fixed speed between grid points and pauses during a simulated position outage. The dashboard can replay this route. It is not a three dimensional dynamics model or an autonomous aircraft.
+
 A simple detector finds bright connected regions in synthetic grayscale images. It is not a trained model and it has not been evaluated on camera images.
 
 Telemetry snapshots expose the simulated readings and link availability flags. They mark the four motor positions, battery and geographic position as not modelled. A local read only screen can replay the closed loop simulation. There is no login, live wireless connection or command interface yet.
@@ -46,7 +48,7 @@ Choose a concrete task and labelled dataset before selecting a method. Define th
 
 ### Path planning and autonomy
 
-Specify the map representation, geofence, mission states and the authority to start or stop a mission. Test route planning, blocked destinations and changing obstacles separately from control. A route is not a verified flight trajectory. Three dimensional planning, avoidance and autonomous mission execution are not implemented yet.
+Specify the map representation, geofence, mission states and the authority to start or stop a mission. Test route planning, blocked destinations and changing obstacles separately from control. The current grid planner has fixed obstacles and simplified motion. A route is not a verified flight trajectory. Dynamic avoidance and autonomous flight are not implemented yet.
 
 ### Telemetry and connectivity
 

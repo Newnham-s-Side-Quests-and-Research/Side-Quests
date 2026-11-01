@@ -12,6 +12,8 @@ The evidence module records claims and file hashes. It checks references and ide
 
 The simulation includes an isolated vertical motion model. A separate closed loop model connects synthetic pressure, position and motion readings to a vertical state estimator and a bounded PID style controller. Both models support deliberately introduced signal faults. A grid planner, synthetic image detector and telemetry mapper are also included. They do not operate hardware or reproduce the original firmware.
 
+A separate three dimensional kinematic mission plans a route through a synthetic grid. It moves between grid points at a fixed speed and pauses when its simulated position signal is unavailable. It does not model aircraft attitude or physical flight dynamics.
+
 ## Run the checks
 
 From this folder run:
@@ -53,9 +55,15 @@ To write the closed loop trace instead:
 python -m drone_archive closed fixtures/closed-loop-scenario.json --output results/closed-loop.json
 ```
 
+To run the three dimensional grid mission:
+
+```powershell
+python -m drone_archive mission3d fixtures/mission3d-scenario.json --output results/mission3d.json
+```
+
 ## Read before using the model
 
-The architecture document explains the equations and assumptions. The reconstruction roadmap separates the implemented components from the work still needed for autonomy, computer vision and real connectivity. The verification record says what the tests cover. The evidence gaps document separates the account of the original build from new work. None of this establishes flight safety, airworthiness or the behaviour of the original hardware.
+The project status document lists what is implemented and what remains. The architecture document explains the equations and assumptions. The reconstruction roadmap separates the implemented components from the work still needed for autonomy, computer vision and real connectivity. The verification record says what the tests cover. The evidence gaps document separates the account of the original build from new work. None of this establishes flight safety, airworthiness or the behaviour of the original hardware.
 
 ## Browser checks
 

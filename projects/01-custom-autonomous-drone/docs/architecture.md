@@ -38,6 +38,8 @@ The replay uses simulated pressure, altitude observations and ideal simulated ac
 
 The planner uses A star on a bounded two dimensional grid with four possible movements. It returns a shortest route or no route. It has no representation of aircraft motion or real coordinates. The telemetry mapper converts synthetic samples to read only snapshots. Motor, battery and geographic position states remain explicitly unmodelled. It opens no network connection.
 
+The three dimensional grid planner uses six possible movements between neighbouring cells. Its kinematic mission moves along the resulting route at a fixed speed. It pauses without changing position when the synthetic position signal is unavailable. This is a simplified test convention, not a procedure for a physical aircraft. It does not model attitude, motor response, wind, ground contact or real geographic coordinates.
+
 ## Synthetic vision and integration
 
 A separate image module finds connected regions above a brightness threshold in a synthetic grayscale grid. It reports area, bounding coordinates and centroid. It rejects malformed images and does not claim to recognise objects in a real camera feed.

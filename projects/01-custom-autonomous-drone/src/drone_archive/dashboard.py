@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 from .scenarios import build_scenarios
+from .mission3d import run_mission
 
 ASSETS = Path(__file__).resolve().parents[2] / 'dashboard'
 
@@ -11,6 +12,9 @@ class LocalDashboard(ThreadingHTTPServer):
         scenarios = build_scenarios(config)
         self.trace = json.dumps(scenarios[0]['report'], allow_nan=False).encode('utf-8')
         self.scenarios = json.dumps(scenarios, allow_nan=False).encode('utf-8')
+        mission_file = ASSETS.parent / 'fixtures' / 'mission3d-scenario.json'
+        mission_config = json.loads(mission_file.read_text(encoding='utf-8'))
+        self.mission = json.dumps(run_mission(mission_config), allow_nan=False).encode('utf-8')
         super().__init__(('127.0.0.1', port), DashboardHandler)
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -18,6 +22,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
         routes = {'/': ('index.html', 'text/html; charset=utf-8'),
                   '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                   '/style.css': ('style.css', 'text/css; charset=utf-8')}
+        if self.path == '/api/mission':
+            return self.respond(200, 'application/json; charset=utf-8', self.server.mission)
         if self.path == '/api/scenarios':
             return self.respond(200, 'application/json; charset=utf-8', self.server.scenarios)
         if self.path == '/api/trace':

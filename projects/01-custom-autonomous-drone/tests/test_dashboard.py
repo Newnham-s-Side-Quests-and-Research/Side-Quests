@@ -30,6 +30,11 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('text/html', response.headers['Content-Type'])
             self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
             self.assertIn(b'Synthetic data', response.read())
+        with urlopen(self.url + '/api/mission', timeout=3) as response:
+            mission = json.load(response)
+            self.assertEqual(mission['status'], 'complete')
+            self.assertEqual(len(mission['trace']), 32)
+            self.assertIn('No attitude, motor, wind, battery or three dimensional flight dynamics', mission['limitations'])
         with urlopen(self.url + '/api/scenarios', timeout=3) as response:
             scenarios = json.load(response)
             self.assertEqual(len(scenarios), 4)
