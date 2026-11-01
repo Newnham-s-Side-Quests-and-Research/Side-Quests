@@ -1,5 +1,7 @@
-# 01: Custom Autonomous Drone
+# Custom Autonomous Drone
 
-Status: planned. No project implementation or results are claimed.
+This is an earlier drone build. I am working to recover the original files and evidence so I can show what was built and tested.
 
-This folder is reserved for the project code, tests and evidence when implementation begins. Read the [engineering pack](../../engineering-packs/01-custom-autonomous-drone-engineering-pack.md) and the [project plan](../../plans/01-custom-autonomous-drone.md) before building. The original [technical brief](../../source/Engineering%20Portfolio/Project%2001%20Custom%20Autonomous%20Drone/02%20Technical%20Two%20Pager.pdf) and [case study](../../source/Engineering%20Portfolio/Project%2001%20Custom%20Autonomous%20Drone/03%20Case%20Study.pdf) are also available.
+The engineering pack and project plan describe the proposed work to reconstruct the design and verify the available evidence. The original portfolio documents are in the source folder.
+
+This folder will hold the recovered material and any new tests once they are ready. No new test results are claimed here yet.
